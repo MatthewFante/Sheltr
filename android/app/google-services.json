@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "446207384356",
+    "project_id": "sheltr-fea25",
+    "storage_bucket": "sheltr-fea25.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:446207384356:android:46544c4d27895cfbe971b1",
+        "android_client_info": {
+          "package_name": "com.example.sheltr"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBw5oDg-hMxDIafS2-LjSYpOiOprC0aNfs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:446207384356:android:a1893db291e9921be971b1",
+        "android_client_info": {
+          "package_name": "com.example.untitled"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBw5oDg-hMxDIafS2-LjSYpOiOprC0aNfs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
