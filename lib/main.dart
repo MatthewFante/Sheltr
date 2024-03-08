@@ -1,69 +1,45 @@
+// Matthew Fante
+// INFO-C451: System Implementation
+// Spring 2024 Final Project
+
 import 'package:flutter/material.dart';
 import 'package:untitled/assets/palatte.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:untitled/pages/home_page.dart';
+import 'package:untitled/pages/login_page.dart';
 
-void main() {
-  runApp(const MyApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+
+  // Determine the starting page
+  User? user = FirebaseAuth.instance.currentUser;
+  Widget startPage = const LoginPage();
+
+  // If the user is already logged in, go to the home page
+  if (user != null) {
+    startPage = const HomePage();
+  }
+
+  // Run the app
+  runApp(MyApp(startPage: startPage));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  // This widget is the root of the application.
+  final Widget startPage;
+  const MyApp({super.key, required this.startPage});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Sheltr',
       theme: ThemeData(
+        // Using a custom color palette defined in assets/palette.dart
         primarySwatch: Palette.crimson,
       ),
-      home: const MyHomePage(title: 'Sheltr'),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      home: startPage,
     );
   }
 }
