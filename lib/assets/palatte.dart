@@ -6,7 +6,7 @@
 
 import 'package:flutter/material.dart';
 
-class Palette {
+class Palatte {
   static MaterialColor crimson = const MaterialColor(
     0xff990000, // 100% shade
     <int, Color>{

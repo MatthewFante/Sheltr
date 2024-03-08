@@ -36,8 +36,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Sheltr',
       theme: ThemeData(
-        // Using a custom color palette defined in assets/palette.dart
-        primarySwatch: Palette.crimson,
+        // Using a custom color palette defined in assets/palatte.dart
+        primarySwatch: Palatte.crimson,
       ),
       home: startPage,
     );
