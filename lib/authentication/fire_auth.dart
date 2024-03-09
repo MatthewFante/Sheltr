@@ -12,6 +12,7 @@ class FireAuth {
     required String name,
     required String email,
     required String password,
+    required String phoneNum,
   }) async {
     FirebaseAuth auth = FirebaseAuth.instance;
     User? user;
@@ -22,6 +23,7 @@ class FireAuth {
       );
       user = userCredential.user;
       await user!.updateProfile(displayName: name);
+
       await user.reload();
       user = auth.currentUser;
     } on FirebaseAuthException catch (e) {

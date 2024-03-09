@@ -44,4 +44,17 @@ class Validator {
 
     return null;
   }
+
+  static String? validatePhoneNum({required String phoneNum}) {
+    if (phoneNum == null) {
+      return null;
+    }
+    if (phoneNum.isEmpty) {
+      return 'Phone number can\'t be empty';
+    } else if (phoneNum.length != 10) {
+      return 'Enter a ten-digit phone number';
+    }
+
+    return null;
+  }
 }

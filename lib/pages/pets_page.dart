@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 
-class PetsPage extends StatelessWidget {
+class PetsPage extends StatefulWidget {
   const PetsPage({super.key});
+
+  @override
+  State<PetsPage> createState() => _PetsPageState();
+}
+
+class _PetsPageState extends State<PetsPage> {
+  bool showAddPetButton = true;
 
   @override
   Widget build(BuildContext context) {
@@ -12,9 +19,9 @@ class PetsPage extends StatelessWidget {
             15, (index) => Placeholder()), // Adjust number of tiles
       ),
       floatingActionButton: Visibility(
-        visible: false, // Set to false to hide the button
+        visible: showAddPetButton,
         child: FloatingActionButton.extended(
-          label: const Text('Pet', style: TextStyle(color: Colors.white)),
+          label: const Text('Add Pet', style: TextStyle(color: Colors.white)),
           icon: const Icon(Icons.add, color: Colors.white),
           backgroundColor: const Color(0xff990000),
           onPressed: () {

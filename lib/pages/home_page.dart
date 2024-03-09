@@ -14,7 +14,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
-  bool showAddPetButton = false;
 
   // create a list of the pages that are navigated to when the user clicks on a navigation item
   final List<Widget> _pages = [
@@ -34,10 +33,6 @@ class _HomePageState extends State<HomePage> {
     final currentUserId = getCurrentUser()?.uid ?? 'Unknown';
 
     bool adminView = true;
-
-    _currentIndex == 0 && adminView
-        ? showAddPetButton = true
-        : showAddPetButton = false;
 
     return Scaffold(
       appBar: AppBar(

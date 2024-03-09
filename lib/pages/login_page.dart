@@ -58,6 +58,11 @@ class LoginPage extends StatelessWidget {
               ),
               const SizedBox(height: 8.0),
               ElevatedButton(
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(
+                    const Color(0xff990000),
+                  ),
+                ),
                 onPressed: () async {
                   if (formKey.currentState!.validate()) {
                     User? user = await FireAuth.signInUsingEmailPassword(
