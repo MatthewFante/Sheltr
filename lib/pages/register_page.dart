@@ -23,12 +23,10 @@ class _RegisterPageState extends State<RegisterPage> {
   final _nameTextController = TextEditingController();
   final _emailTextController = TextEditingController();
   final _passwordTextController = TextEditingController();
-  final _phoneNumTextController = TextEditingController();
 
   final _focusName = FocusNode();
   final _focusEmail = FocusNode();
   final _focusPassword = FocusNode();
-  final _focusPhoneNum = FocusNode();
 
   bool _isProcessing = false;
 
@@ -105,24 +103,6 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 16.0),
-                      TextFormField(
-                        controller: _phoneNumTextController,
-                        focusNode: _focusPhoneNum,
-                        obscureText: true,
-                        validator: (value) => Validator.validatePhoneNum(
-                          phoneNum: value!,
-                        ),
-                        decoration: InputDecoration(
-                          hintText: "Phone Number",
-                          errorBorder: UnderlineInputBorder(
-                            borderRadius: BorderRadius.circular(6.0),
-                            borderSide: const BorderSide(
-                              color: Colors.red,
-                            ),
-                          ),
-                        ),
-                      ),
                       const SizedBox(height: 32.0),
                       _isProcessing
                           ? const CircularProgressIndicator()
@@ -149,8 +129,6 @@ class _RegisterPageState extends State<RegisterPage> {
                                           email: _emailTextController.text,
                                           password:
                                               _passwordTextController.text,
-                                          phoneNum:
-                                              _phoneNumTextController.text,
                                         );
 
                                         setState(() {
