@@ -1,7 +1,5 @@
-import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/services.dart';
 import 'package:untitled/models/pet.dart';
 import 'package:untitled/widgets/image_upload_modal.dart';
 
@@ -33,44 +31,12 @@ class _NewPetDialogState extends State<NewPetDialog> {
     );
   }
 
-  Future<void> loadBreedOptions(String species) async {
-    String csvFileName = '';
-    if (species == 'Dog') {
-      csvFileName = 'dog_breeds.csv';
-    } else if (species == 'Cat') {
-      csvFileName = 'cat_breeds.csv';
-    } else {
-      csvFileName = 'other_breeds.csv';
-    }
-
-    // Load CSV file from assets
-    String data = await rootBundle.loadString('lib/assets/$csvFileName');
-
-    // Parse CSV data
-    List<List<dynamic>> csvTable = CsvToListConverter().convert(data);
-
-    List<String> breeds = [];
-    for (var row in csvTable) {
-      breeds.add(row[0]);
-    }
-
-    setState(() {
-      breedOptions = breeds;
-    });
-  }
-
   @override
   void dispose() {
     nameController.dispose();
     breedController.dispose();
     descriptionController.dispose();
     super.dispose();
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    loadBreedOptions(selectedSpecies ?? ''); // Load breeds initially
   }
 
   @override
@@ -125,25 +91,14 @@ class _NewPetDialogState extends State<NewPetDialog> {
                   return null;
                 },
               ),
-              DropdownButtonFormField<String>(
-                value: breedController.text,
+              TextFormField(
+                controller: breedController,
                 decoration: const InputDecoration(
-                  hintText: 'Breed',
+                  hintText: 'Pet Breed',
                 ),
-                items: breedOptions.map((breed) {
-                  return DropdownMenuItem<String>(
-                    value: breed,
-                    child: Text(breed),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    breedController.text = value!;
-                  });
-                },
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please select pet breed';
+                    return 'Please enter pet breed';
                   }
                   return null;
                 },
