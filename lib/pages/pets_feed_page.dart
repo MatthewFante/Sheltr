@@ -19,6 +19,7 @@ class _PetsPageState extends State<PetsPage> {
   bool showAddPetButton = false; // Initially hide the button
 
   String userRole = 'user'; // Default to 'user'
+  Stream<List<Pet>>? petStream;
 
   @override
   void initState() {
@@ -28,6 +29,16 @@ class _PetsPageState extends State<PetsPage> {
         userRole = role;
         showAddPetButton =
             role == 'shelter'; // Show button only for 'admin' or 'shelter'
+
+        if (role == 'admin') {
+          petStream = Pet.streamAllPets(); // Stream all pets for 'admin'
+        } else if (role == 'shelter') {
+          petStream =
+              Pet.streamMyPets(); // Stream only shelter pets for 'shelter'
+        } else {
+          petStream = Pet
+              .streamAvailablePets(); // Stream only available pets for 'user' or 'shelter'
+        }
       });
     });
   }
@@ -62,7 +73,7 @@ class _PetsPageState extends State<PetsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: StreamBuilder<List<Pet>>(
-        stream: Pet.readPets(),
+        stream: petStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
@@ -74,7 +85,15 @@ class _PetsPageState extends State<PetsPage> {
               child: Text('Error: ${snapshot.error}'),
             );
           }
+
+          if (!snapshot.hasData) {
+            return const Center(
+              child: Text('No pets found'),
+            );
+          }
+
           final pets = snapshot.data!;
+
           return GridView.builder(
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3, // 3 images wide

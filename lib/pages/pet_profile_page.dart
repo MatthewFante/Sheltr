@@ -153,12 +153,11 @@ class _PetProfilePageState extends State<PetProfilePage> {
               'Age: ${widget.pet.age["years"]} years, ${widget.pet.age["months"]} months',
               style: const TextStyle(fontSize: 18.0),
             ),
-            const SizedBox(height: 16.0),
             Text(
               'Available: ${isAvailable ? "Yes" : "No"}', // Display availability status
               style: const TextStyle(fontSize: 18.0),
             ),
-            const SizedBox(height: 16.0),
+            const SizedBox(height: 300.0),
             FutureBuilder<String>(
               future: getCurrentUserType(),
               builder: (context, snapshot) {
@@ -185,7 +184,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                 }
               },
             ),
-            const SizedBox(height: 16.0),
+
             FutureBuilder<bool>(
               future: getCurrentUserType().then((value) => value == 'admin'),
               builder: (context, snapshot) {
@@ -203,8 +202,9 @@ class _PetProfilePageState extends State<PetProfilePage> {
                     children: [
                       ElevatedButton(
                         onPressed: toggleAvailability,
-                        child: Text(
-                            isAvailable ? 'Set Unavailable' : 'Set Available'),
+                        child: Text(isAvailable
+                            ? 'Mark Unavailable'
+                            : 'Mark Available'),
                       ),
                       ElevatedButton(
                         onPressed: deletePet,

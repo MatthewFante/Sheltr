@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class Pet {
   String documentId;
@@ -55,8 +56,29 @@ class Pet {
         available: json['available'],
       );
 
-  static Stream<List<Pet>> readPets() => FirebaseFirestore.instance
+  static Stream<List<Pet>> streamAllPets() => FirebaseFirestore.instance
       .collection('pets')
+      .snapshots()
+      .map((snapshot) =>
+          snapshot.docs.map((doc) => Pet.fromJson(doc.data())).toList());
+
+  static Stream<List<Pet>> streamMyPets() {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      throw Exception('No user logged in');
+    }
+
+    return FirebaseFirestore.instance
+        .collection('pets')
+        .where('createdByUserId', isEqualTo: currentUser.uid)
+        .snapshots()
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => Pet.fromJson(doc.data())).toList());
+  }
+
+  static Stream<List<Pet>> streamAvailablePets() => FirebaseFirestore.instance
+      .collection('pets')
+      .where('available', isEqualTo: true)
       .snapshots()
       .map((snapshot) =>
           snapshot.docs.map((doc) => Pet.fromJson(doc.data())).toList());
@@ -108,11 +130,4 @@ class Pet {
         .doc(id)
         .update({'available': available});
   }
-
-  static Stream<List<Pet>> streamAvailablePets() => FirebaseFirestore.instance
-      .collection('pets')
-      .where('available', isEqualTo: true)
-      .snapshots()
-      .map((snapshot) =>
-          snapshot.docs.map((doc) => Pet.fromJson(doc.data())).toList());
 }
