@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:untitled/models/pet.dart'; // Replace 'your_project_name' with your actual project name
-import 'package:untitled/pages/pet_profile_page.dart'; // Replace 'your_project_name' with your actual project name
-import 'package:untitled/widgets/new_pet_dialog.dart'; // Replace 'your_project_name' with your actual project name
+import 'package:untitled/models/pet.dart';
+import 'package:untitled/pages/pet_profile_page.dart';
+import 'package:untitled/widgets/new_pet_dialog.dart';
+import 'package:untitled/models/user_profile.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class PetsPage extends StatefulWidget {
   const PetsPage({Key? key}) : super(key: key);
@@ -11,7 +14,49 @@ class PetsPage extends StatefulWidget {
 }
 
 class _PetsPageState extends State<PetsPage> {
-  bool showAddPetButton = true;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  bool showAddPetButton = false; // Initially hide the button
+
+  String userRole = 'user'; // Default to 'user'
+
+  @override
+  void initState() {
+    super.initState();
+    getCurrentUserRole().then((role) {
+      setState(() {
+        userRole = role;
+        showAddPetButton =
+            role == 'shelter'; // Show button only for 'admin' or 'shelter'
+      });
+    });
+  }
+
+  Future<String> getCurrentUserRole() async {
+    try {
+      final User? currentUser = _auth.currentUser;
+
+      if (currentUser == null) {
+        throw Exception("No user logged in");
+      }
+
+      final userDoc = await _firestore
+          .collection('user_profiles')
+          .doc(currentUser.uid)
+          .get();
+
+      if (!userDoc.exists) {
+        throw Exception("User profile does not exist");
+      }
+
+      final UserProfile userProfile = UserProfile.fromDocumentSnapshot(userDoc);
+
+      return userProfile.userType; // Return the user's role
+    } catch (e) {
+      print("Error fetching user role: $e");
+      return 'user'; // Default to 'user' on error
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +65,7 @@ class _PetsPageState extends State<PetsPage> {
         stream: Pet.readPets(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
+            return const Center(
               child: CircularProgressIndicator(),
             );
           }
@@ -31,7 +76,7 @@ class _PetsPageState extends State<PetsPage> {
           }
           final pets = snapshot.data!;
           return GridView.builder(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3, // 3 images wide
               mainAxisSpacing: 4.0,
               crossAxisSpacing: 4.0,
@@ -75,7 +120,7 @@ class _PetsPageState extends State<PetsPage> {
             showDialog(
               context: context,
               builder: (BuildContext context) {
-                return NewPetDialog();
+                return const NewPetDialog();
               },
             );
           },

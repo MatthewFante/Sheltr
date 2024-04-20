@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:untitled/authentication/validator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:untitled/authentication/fire_auth.dart';
-import 'package:untitled/pages/home_page.dart';
+import 'package:untitled/widgets/menu_scaffold.dart';
 import 'package:untitled/pages/register_page.dart';
 
 class LoginPage extends StatelessWidget {
@@ -65,16 +65,30 @@ class LoginPage extends StatelessWidget {
                 ),
                 onPressed: () async {
                   if (formKey.currentState!.validate()) {
-                    User? user = await FireAuth.signInUsingEmailPassword(
-                      email: emailTextController.text,
-                      password: passwordTextController.text,
-                      context: context,
-                    );
-                    if (user != null) {
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                            builder: (context) => const HomePage()),
+                    try {
+                      User? user = await FireAuth.signInUsingEmailPassword(
+                        email: emailTextController.text,
+                        password: passwordTextController.text,
+                        context: context,
                       );
+                      if (user != null) {
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                              builder: (context) => const HomePage()),
+                        );
+                      } else {
+                        throw Exception("Login failed!");
+                      }
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text(
+                              "Login failed. Please check your credentials and try again.",
+                            ),
+                            backgroundColor: Color(0xff990000)),
+                      );
+                      // Clear the password field on failure
+                      passwordTextController.clear();
                     }
                   }
                 },

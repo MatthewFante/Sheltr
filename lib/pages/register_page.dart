@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:untitled/authentication/fire_auth.dart';
 import 'package:untitled/authentication/validator.dart';
-import 'package:untitled/pages/home_page.dart';
+import 'package:untitled/widgets/menu_scaffold.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
