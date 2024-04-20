@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Pet {
-  String createdByUserId;
+  String documentId;
+  final String createdByUserId;
   final String name;
   final String species;
   final String breed;
@@ -13,7 +14,8 @@ class Pet {
   final bool available;
 
   Pet({
-    this.createdByUserId = '',
+    required this.documentId,
+    required this.createdByUserId,
     required this.name,
     required this.species,
     required this.breed,
@@ -26,6 +28,7 @@ class Pet {
   });
 
   Map<String, dynamic> toJson() => {
+        'documentId': documentId,
         'createdByUserId': createdByUserId,
         'name': name,
         'species': species,
@@ -39,6 +42,7 @@ class Pet {
       };
 
   static Pet fromJson(Map<String, dynamic> json) => Pet(
+        documentId: json['documentId'],
         createdByUserId: json['createdByUserId'],
         name: json['name'],
         species: json['species'],
@@ -57,9 +61,36 @@ class Pet {
       .map((snapshot) =>
           snapshot.docs.map((doc) => Pet.fromJson(doc.data())).toList());
 
-  static Future<void> createPet(Pet pet) async {
+  static Future<Pet> createPet(Pet pet) async {
+    // Create the new pet document in Firestore
     final petData = pet.toJson();
-    await FirebaseFirestore.instance.collection('pets').add(petData);
+
+    // Add the document to Firestore and get the document reference
+    final docRef =
+        await FirebaseFirestore.instance.collection('pets').add(petData);
+
+    // Get the Firestore-generated document ID
+    final documentId = docRef.id;
+
+    // Update the Firestore document to include the document ID
+    await FirebaseFirestore.instance.collection('pets').doc(documentId).update({
+      'documentId': documentId,
+    });
+
+    // Return the updated Pet object with the correct document ID
+    return Pet(
+      documentId: documentId,
+      createdByUserId: pet.createdByUserId,
+      name: pet.name,
+      species: pet.species,
+      breed: pet.breed,
+      size: pet.size,
+      sex: pet.sex,
+      age: pet.age,
+      description: pet.description,
+      imageUrls: pet.imageUrls,
+      available: pet.available,
+    );
   }
 
   static Future<void> updatePet(String id, Pet pet) async {

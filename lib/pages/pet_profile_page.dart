@@ -6,6 +6,70 @@ class PetProfilePage extends StatelessWidget {
 
   const PetProfilePage({Key? key, required this.pet}) : super(key: key);
 
+  void toggleAvailability(BuildContext context) async {
+    try {
+      await Pet.updatePetAvailability(pet.documentId, !pet.available);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Availability set to ${pet.available ? "No" : "Yes"}',
+          ),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error toggling availability: $e'),
+        ),
+      );
+    }
+  }
+
+  void deletePet(BuildContext context) async {
+    // Show a confirmation dialog before deleting
+    final confirmDelete = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Delete ${pet.name}?'),
+          content: Text('Are you sure you want to delete this pet?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context, false); // Cancel
+              },
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context, true); // Confirm
+              },
+              child: Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmDelete == true) {
+      try {
+        await Pet.deletePet(pet.documentId);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${pet.name} has been deleted.'),
+          ),
+        );
+        Navigator.pop(context); // Close the current screen after deletion
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error deleting pet: $e'),
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -66,11 +130,33 @@ class PetProfilePage extends StatelessWidget {
               style: TextStyle(fontSize: 18.0),
             ),
             SizedBox(height: 16.0),
-            ElevatedButton(
-              onPressed: () {
-                // Implement logic for adoption or other actions
-              },
-              child: Text('Adopt ${pet.name}'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    // Implement logic for adoption or other actions
+                  },
+                  child: Text('Request a Meet & Greet'),
+                ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    toggleAvailability(context);
+                  },
+                  child: Text('Toggle Availability'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    deletePet(context);
+                  },
+                  child: Text('Delete'),
+                ),
+              ],
             ),
           ],
         ),

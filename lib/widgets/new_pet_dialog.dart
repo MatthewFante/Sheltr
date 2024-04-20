@@ -262,7 +262,9 @@ class _NewPetDialogState extends State<NewPetDialog> {
 
               final age = {'years': ageYears, 'months': ageMonths};
 
-              final pet = Pet(
+              final newPet = Pet(
+                documentId:
+                    '', // Temporary placeholder; to be replaced after creation
                 createdByUserId: createdByUserId,
                 name: name,
                 species: species,
@@ -272,17 +274,23 @@ class _NewPetDialogState extends State<NewPetDialog> {
                 age: age,
                 description: description,
                 imageUrls: imageUrls,
-                available: true, // Assuming pet is available by default
+                available: true,
               );
 
-              await Pet.createPet(pet);
+              // Create the new pet and receive the updated Pet instance
+              final createdPet = await Pet.createPet(newPet);
+
+              // Display a success message
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Pet added successfully!'),
                   duration: Duration(seconds: 1),
                 ),
               );
-              Navigator.pop(context);
+
+              // Close the dialog
+              Navigator.pop(context,
+                  createdPet); // Return the createdPet to the previous screen
             }
           },
           child: const Text('Add Pet'),
