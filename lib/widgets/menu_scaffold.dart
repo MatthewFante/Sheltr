@@ -46,7 +46,7 @@ class _MenuScaffoldState extends State<MenuScaffold> {
       appBar: AppBar(
         backgroundColor: const Color(0xff990000),
         title: const Text(
-          'Sheltr',
+          'Sheltr 🐾',
           style: TextStyle(
               fontSize: 30, fontWeight: FontWeight.bold, color: Colors.white),
         ),
@@ -163,7 +163,7 @@ class _MenuScaffoldState extends State<MenuScaffold> {
             children: [
               const DrawerHeader(
                 child: Text(
-                  'Sheltr',
+                  'Sheltr 🐾',
                   style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
                 ),
               ),
