@@ -1,265 +1,227 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:untitled/pages/appointments_page.dart';
 import 'package:untitled/pages/login_page.dart';
-import 'package:untitled/pages/user_profile_page.dart';
 import 'package:untitled/pages/pets_feed_page.dart';
 import 'package:untitled/pages/approvals_page.dart';
-import 'package:untitled/pages/requests_page.dart'; // Placeholder for your Requests page
+import 'package:untitled/pages/requests_page.dart';
+import 'package:untitled/pages/user_profile_page.dart'; // Adjust import if needed
 import 'package:untitled/models/user_profile.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class MenuScaffold extends StatefulWidget {
+  const MenuScaffold({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<MenuScaffold> createState() => _MenuScaffoldState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _MenuScaffoldState extends State<MenuScaffold> {
   int _currentIndex = 0;
 
-  Future<String?> getUserRole() async {
-    final currentUser = FirebaseAuth.instance.currentUser;
+  Future<User?> getCurrentUser() async {
+    return FirebaseAuth.instance.currentUser;
+  }
 
-    if (currentUser == null) {
+  Future<UserProfile?> getUserProfile(User? user) async {
+    if (user == null) {
       return null; // No user is signed in
     }
 
-    try {
-      final userProfileDoc = await FirebaseFirestore.instance
-          .collection('user_profiles')
-          .doc(currentUser.uid)
-          .get();
-
-      if (userProfileDoc.exists) {
-        final userProfile = UserProfile.fromDocumentSnapshot(userProfileDoc);
-        return userProfile.userType;
-      } else {
-        return null; // If no profile is found
-      }
-    } catch (e) {
-      print("Error checking user role: $e");
-      return null; // If there's an error
-    }
-  }
-
-  Future<UserProfile?> getUserProfile() async {
-    final user = FirebaseAuth.instance.currentUser;
-
-    if (user == null) {
-      throw Exception("No user logged in");
-    }
-
-    final doc = await FirebaseFirestore.instance
+    final userProfileDoc = await FirebaseFirestore.instance
         .collection('user_profiles')
         .doc(user.uid)
         .get();
 
-    if (doc.exists) {
-      return UserProfile.fromMap(doc.data()!);
+    if (userProfileDoc.exists) {
+      return UserProfile.fromDocumentSnapshot(userProfileDoc);
     } else {
-      return null; // User profile not found
+      return null; // No profile found
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<String?>(
-      future: getUserRole(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Scaffold(
-            appBar: AppBar(
-              backgroundColor: const Color(0xff990000),
-              title: const Text('Sheltr',
-                  style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white)),
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: const Color(0xff990000),
+        title: const Text(
+          'Sheltr',
+          style: TextStyle(
+              fontSize: 30, fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+      ),
+      body: FutureBuilder<User?>(
+        future: getCurrentUser(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final user = snapshot.data;
+
+          final pages = <Widget>[
+            const PetsFeedPage(),
+          ];
+
+          if (user != null) {
+            return FutureBuilder<UserProfile?>(
+              future: getUserProfile(user),
+              builder: (context, profileSnapshot) {
+                if (profileSnapshot.connectionState ==
+                    ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                final userProfile = profileSnapshot.data;
+                final userRole = userProfile?.userType;
+
+                if (userRole == 'user') {
+                  pages.add(const AppointmentsPage());
+                } else if (userRole == 'shelter') {
+                  pages.add(RequestsPage());
+                } else if (userRole == 'admin') {
+                  pages.add(ApprovalsPage());
+                }
+
+                return buildContent(pages);
+              },
+            );
+          }
+
+          return buildContent(pages); // For non-logged-in users
+        },
+      ),
+      bottomNavigationBar: buildBottomNavigationBar(),
+      drawer: buildDrawer(),
+    );
+  }
+
+  Widget buildContent(List<Widget> pages) {
+    return IndexedStack(
+      index: _currentIndex,
+      children: pages,
+    );
+  }
+
+  Widget buildBottomNavigationBar() {
+    final bottomNavItems = <BottomNavigationBarItem>[
+      const BottomNavigationBarItem(
+        icon: Icon(Icons.pets),
+        label: 'Pets',
+      ),
+    ];
+
+    if (FirebaseAuth.instance.currentUser == null) {
+      bottomNavItems.add(
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.login),
+          label: 'Login',
+        ),
+      );
+    } else {
+      bottomNavItems.add(
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.question_answer),
+          label: 'Requests',
+        ),
+      );
+    }
+
+    return BottomNavigationBar(
+      currentIndex: _currentIndex,
+      onTap: (int index) {
+        if (index == 1 && FirebaseAuth.instance.currentUser == null) {
+          // Navigate to LoginPage if user is not logged in
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const LoginPage(),
             ),
-            body: const Center(
-                child: CircularProgressIndicator()), // While loading
           );
+        } else {
+          setState(() {
+            _currentIndex = index;
+          });
+        }
+      },
+      items: bottomNavItems,
+    );
+  }
+
+  Widget buildDrawer() {
+    return FutureBuilder<User?>(
+      future: getCurrentUser(),
+      builder: (context, userSnapshot) {
+        if (userSnapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
         }
 
-        final userRole = snapshot.data;
+        final user = userSnapshot.data;
 
-        // Define the bottom navigation items based on the user role
-        final bottomNavItems = <BottomNavigationBarItem>[
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.pets),
-            label: 'Pets',
-          ),
-        ];
-
-        final pages = <Widget>[
-          const PetsPage(),
-        ];
-
-        // Add the second item based on user role
-        if (userRole == 'user') {
-          bottomNavItems.add(
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_month),
-              label: 'Appointments',
-            ),
-          );
-          pages.add(const AppointmentsPage());
-        } else if (userRole == 'shelter') {
-          bottomNavItems.add(
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.request_quote),
-              label: 'Requests',
-            ),
-          );
-          pages.add(RequestsPage());
-        } else if (userRole == 'admin') {
-          bottomNavItems.add(
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.approval),
-              label: 'Approvals',
-            ),
-          );
-          pages.add(ApprovalsPage());
-        }
-
-        return Scaffold(
-          appBar: AppBar(
-            backgroundColor: const Color(0xff990000),
-            title: const Text('Sheltr',
-                style: TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white)),
-          ),
-          body: pages[_currentIndex], // Set the body based on the current index
-          bottomNavigationBar: BottomNavigationBar(
-            currentIndex: _currentIndex,
-            onTap: (int index) {
-              setState(() {
-                _currentIndex = index; // Update the current index
-              });
-            },
-            items:
-                bottomNavItems, // Use the correct items based on the user role
-          ),
-          drawer: Drawer(
-            child: ListView(
-              children: [
-                const SizedBox(
-                  height: 70,
-                  child: DrawerHeader(
-                    child: Text(
-                      'Sheltr',
-                      style:
-                          TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-                    ),
-                  ),
+        return Drawer(
+          child: ListView(
+            children: [
+              const DrawerHeader(
+                child: Text(
+                  'Sheltr',
+                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.pets),
+                title: Text('Pets'),
+                onTap: () {
+                  setState(() {
+                    _currentIndex = 0;
+                    Navigator.pop(context); // Close the drawer
+                  });
+                },
+              ),
+              if (user == null) ...[
+                ListTile(
+                  leading: const Icon(Icons.login),
+                  title: const Text('Login'),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const LoginPage(),
+                      ),
+                    );
+                  },
+                ),
+              ],
+              if (user != null) ...[
+                ListTile(
+                  leading: const Icon(Icons.account_circle),
+                  title: Text(user.displayName ?? 'User Profile'),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => UserProfilePage(
+                          user: user,
+                        ),
+                      ),
+                    );
+                  },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.pets),
-                  title: const Text('Pets'),
-                  onTap: () {
-                    setState(() {
-                      _currentIndex = 0;
-                      Navigator.pop(context); // Close the drawer
-                    });
+                  leading: const Icon(Icons.exit_to_app),
+                  title: const Text('Sign Out'),
+                  onTap: () async {
+                    await FirebaseAuth.instance.signOut();
+
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(
+                        builder: (context) => const LoginPage(),
+                      ),
+                    );
                   },
                 ),
-                if (userRole == 'user') ...[
-                  ListTile(
-                    leading: const Icon(Icons.calendar_month),
-                    title: const Text('Appointments'),
-                    onTap: () {
-                      setState(() {
-                        _currentIndex = 1;
-                        Navigator.pop(context); // Close the drawer
-                      });
-                    },
-                  ),
-                ] else if (userRole == 'shelter') ...[
-                  ListTile(
-                    leading: const Icon(Icons.request_quote),
-                    title: const Text('Requests'),
-                    onTap: () {
-                      setState(() {
-                        _currentIndex = 1;
-                        Navigator.pop(context); // Close the drawer
-                      });
-                    },
-                  ),
-                ] else if (userRole == 'admin') ...[
-                  ListTile(
-                    leading: const Icon(Icons.approval),
-                    title: const Text('Approvals'),
-                    onTap: () {
-                      setState(() {
-                        _currentIndex = 1;
-                        Navigator.pop(context); // Close the drawer
-                      });
-                    },
-                  ),
-                ],
-                const SizedBox(
-                  height: 450,
-                ),
-                TextButton(
-                  onPressed: () async {
-                    if (getCurrentUser() != null) {
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                ProfilePage(user: getCurrentUser()!)),
-                      );
-                    } else {
-                      null;
-                    }
-                  },
-                  child: FutureBuilder<UserProfile?>(
-                    future: getUserProfile(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const CircularProgressIndicator();
-                      }
-
-                      final userProfile = snapshot.data;
-
-                      if (userProfile == null) {
-                        return const SizedBox.shrink();
-                      }
-
-                      return ListTile(
-                        title: Text(userProfile.displayName!),
-                        subtitle: Text(userProfile.email),
-                        leading: CircleAvatar(
-                          backgroundImage:
-                              NetworkImage(userProfile.profilePictureUrl!),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                TextButton(
-                    onPressed: () async {
-                      await FirebaseAuth.instance.signOut();
-
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                          builder: (context) => const LoginPage(),
-                        ),
-                      );
-                    },
-                    child: const Text('Sign out')),
               ],
-            ),
+            ],
           ),
         );
       },
     );
-  }
-
-  User? getCurrentUser() {
-    return FirebaseAuth.instance.currentUser;
   }
 }

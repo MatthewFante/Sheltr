@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:untitled/models/upgrade_request.dart';
 import 'package:untitled/models/user_profile.dart';
 import 'package:untitled/widgets/edit_profile_modal.dart';
 import 'package:untitled/pages/login_page.dart';
 import 'package:untitled/widgets/menu_scaffold.dart';
 
-class ProfilePage extends StatefulWidget {
+class UserProfilePage extends StatefulWidget {
   final User user;
 
-  const ProfilePage({super.key, required this.user});
+  const UserProfilePage({super.key, required this.user});
 
   @override
-  _ProfilePageState createState() => _ProfilePageState();
+  _UserProfilePageState createState() => _UserProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
+class _UserProfilePageState extends State<UserProfilePage> {
   late User _currentUser;
   UserProfile? _userProfile;
   bool _isLoading = true;
@@ -49,6 +50,48 @@ class _ProfilePageState extends State<ProfilePage> {
     });
   }
 
+  Future<void> sendUpgradeRequest() async {
+    try {
+      final query = await FirebaseFirestore.instance
+          .collection('upgrade_requests')
+          .where('uid', isEqualTo: _currentUser.uid)
+          .where('status', isEqualTo: 'pending')
+          .get();
+
+      if (query.docs.isNotEmpty) {
+        // If there's already a pending request, inform the user
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('You have already requested an upgrade.')),
+        );
+        return;
+      }
+
+      // Create a new upgrade request
+      final upgradeRequest = UpgradeRequest(
+        uid: _currentUser.uid,
+        status: 'pending',
+        requestTime: Timestamp.now(),
+        requestId: '',
+      );
+
+      // Add the request and update its ID
+      final docRef = await FirebaseFirestore.instance
+          .collection('upgrade_requests')
+          .add(upgradeRequest.toMap());
+
+      await docRef.update({'requestId': docRef.id});
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Upgrade request sent successfully.')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to send upgrade request: $e')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -58,7 +101,7 @@ class _ProfilePageState extends State<ProfilePage> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (context) => const HomePage()),
+              MaterialPageRoute(builder: (context) => const MenuScaffold()),
             );
           },
         ),
@@ -85,18 +128,14 @@ class _ProfilePageState extends State<ProfilePage> {
                                   _userProfile!.profilePictureUrl!),
                             )
                           : const Icon(Icons.account_circle, size: 100),
+                      const SizedBox(height: 32.0),
                       Text(
                         'Name: ${_userProfile?.displayName ?? "Unknown"}',
                         style: Theme.of(context).textTheme.bodyLarge,
                       ),
-                      const SizedBox(height: 16.0),
+                      const SizedBox(height: 8.0),
                       Text(
                         'Email: ${_userProfile?.email ?? "Unknown"}',
-                        style: Theme.of(context).textTheme.bodyLarge,
-                      ),
-                      const SizedBox(height: 16.0),
-                      Text(
-                        'User Type: ${_userProfile?.userType ?? "Unknown"}',
                         style: Theme.of(context).textTheme.bodyLarge,
                       ),
                       const SizedBox(height: 200),
@@ -115,15 +154,12 @@ class _ProfilePageState extends State<ProfilePage> {
                                     );
                                   },
                                 ).then((_) {
-                                  // Refresh user profile after closing the modal
-                                  _fetchUserProfile(); // This will fetch the updated data
+                                  _fetchUserProfile(); // Refresh data after closing the modal
                                 });
                               } else {
-                                // Show an error message if user profile is null
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                      content: Text(
-                                          "Error: User profile not found")),
+                                      content: Text('User profile not found')),
                                 );
                               }
                             },
@@ -144,6 +180,11 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                         ],
                       ),
+                      if (_userProfile?.userType == 'user')
+                        ElevatedButton(
+                          onPressed: sendUpgradeRequest,
+                          child: const Text('Upgrade account'),
+                        ),
                     ],
                   ),
                 ),

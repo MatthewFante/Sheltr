@@ -140,7 +140,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                               .pushAndRemoveUntil(
                                             MaterialPageRoute(
                                               builder: (context) =>
-                                                  const HomePage(),
+                                                  const MenuScaffold(),
                                             ),
                                             ModalRoute.withName('/'),
                                           );

@@ -5,22 +5,15 @@
 import 'package:flutter/material.dart';
 import 'package:untitled/assets/palatte.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:untitled/widgets/menu_scaffold.dart';
-import 'package:untitled/pages/login_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
 
   // Determine the starting page
-  User? user = FirebaseAuth.instance.currentUser;
-  Widget startPage = const LoginPage();
-
-  // If the user is already logged in, go to the home page
-  if (user != null) {
-    startPage = const HomePage();
-  }
+  Widget startPage = const MenuScaffold();
 
   // Run the app
   runApp(MyApp(startPage: startPage));

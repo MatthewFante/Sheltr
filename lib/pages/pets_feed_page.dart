@@ -6,14 +6,14 @@ import 'package:untitled/models/user_profile.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class PetsPage extends StatefulWidget {
-  const PetsPage({Key? key}) : super(key: key);
+class PetsFeedPage extends StatefulWidget {
+  const PetsFeedPage({Key? key}) : super(key: key);
 
   @override
-  State<PetsPage> createState() => _PetsPageState();
+  State<PetsFeedPage> createState() => _PetsFeedPageState();
 }
 
-class _PetsPageState extends State<PetsPage> {
+class _PetsFeedPageState extends State<PetsFeedPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   bool showAddPetButton = false; // Initially hide the button

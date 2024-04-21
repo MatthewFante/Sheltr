@@ -74,7 +74,7 @@ class LoginPage extends StatelessWidget {
                       if (user != null) {
                         Navigator.of(context).pushReplacement(
                           MaterialPageRoute(
-                              builder: (context) => const HomePage()),
+                              builder: (context) => const MenuScaffold()),
                         );
                       } else {
                         throw Exception("Login failed!");
