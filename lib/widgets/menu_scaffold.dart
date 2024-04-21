@@ -212,7 +212,7 @@ class _MenuScaffoldState extends State<MenuScaffold> {
 
                     Navigator.of(context).pushReplacement(
                       MaterialPageRoute(
-                        builder: (context) => const LoginPage(),
+                        builder: (context) => const MenuScaffold(),
                       ),
                     );
                   },
