@@ -31,6 +31,7 @@ class UserProfile {
   // Method to convert UserProfile object to a Map (for storing in Firestore)
   Map<String, dynamic> toMap() {
     return {
+      'userId': userId,
       'email': email,
       'userType': userType,
       'displayName': displayName,

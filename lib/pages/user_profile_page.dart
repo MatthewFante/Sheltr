@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:untitled/models/user_profile.dart';
-import 'package:untitled/authentication/fire_auth.dart';
-import 'package:untitled/widgets/menu_scaffold.dart';
+import 'package:untitled/widgets/edit_profile_modal.dart';
 import 'package:untitled/pages/login_page.dart';
+import 'package:untitled/widgets/menu_scaffold.dart';
 
 class ProfilePage extends StatefulWidget {
   final User user;
@@ -78,6 +78,13 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      _userProfile?.profilePictureUrl != null
+                          ? CircleAvatar(
+                              radius: 50,
+                              backgroundImage: NetworkImage(
+                                  _userProfile!.profilePictureUrl!),
+                            )
+                          : const Icon(Icons.account_circle, size: 100),
                       Text(
                         'Name: ${_userProfile?.displayName ?? "Unknown"}',
                         style: Theme.of(context).textTheme.bodyLarge,
@@ -92,53 +99,50 @@ class _ProfilePageState extends State<ProfilePage> {
                         'User Type: ${_userProfile?.userType ?? "Unknown"}',
                         style: Theme.of(context).textTheme.bodyLarge,
                       ),
+                      const SizedBox(height: 200),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(
-                            'Verification: ',
-                            style: Theme.of(context).textTheme.bodyLarge,
-                          ),
-                          _currentUser.emailVerified
-                              ? Text(
-                                  'Email verified',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyLarge!
-                                      .copyWith(color: Colors.green),
-                                )
-                              : ElevatedButton(
-                                  onPressed: () async {
-                                    await _currentUser.sendEmailVerification();
+                          ElevatedButton(
+                            onPressed: () {
+                              if (_userProfile != null) {
+                                // Open the Edit Profile Modal
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return EditProfileModal(
+                                      userProfile: _userProfile!,
+                                    );
                                   },
-                                  child: const Text('Verify email'),
-                                ),
-                          IconButton(
-                            icon: const Icon(Icons.refresh),
-                            onPressed: () async {
-                              User? user =
-                                  await FireAuth.refreshUser(_currentUser);
-                              if (user != null) {
-                                setState(() {
-                                  _currentUser = user;
+                                ).then((_) {
+                                  // Refresh user profile after closing the modal
+                                  _fetchUserProfile(); // This will fetch the updated data
                                 });
+                              } else {
+                                // Show an error message if user profile is null
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text(
+                                          "Error: User profile not found")),
+                                );
                               }
                             },
+                            child: const Text('Edit Profile'),
+                          ),
+                          const SizedBox(width: 16.0),
+                          ElevatedButton(
+                            onPressed: () async {
+                              await FirebaseAuth.instance.signOut();
+
+                              Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(
+                                  builder: (context) => const LoginPage(),
+                                ),
+                              );
+                            },
+                            child: const Text('Sign Out'),
                           ),
                         ],
-                      ),
-                      const SizedBox(height: 200),
-                      ElevatedButton(
-                        onPressed: () async {
-                          await FirebaseAuth.instance.signOut();
-
-                          Navigator.of(context).pushReplacement(
-                            MaterialPageRoute(
-                              builder: (context) => const LoginPage(),
-                            ),
-                          );
-                        },
-                        child: const Text('Sign Out'),
                       ),
                     ],
                   ),

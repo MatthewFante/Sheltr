@@ -44,6 +44,25 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<UserProfile?> getUserProfile() async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      throw Exception("No user logged in");
+    }
+
+    final doc = await FirebaseFirestore.instance
+        .collection('user_profiles')
+        .doc(user.uid)
+        .get();
+
+    if (doc.exists) {
+      return UserProfile.fromMap(doc.data()!);
+    } else {
+      return null; // User profile not found
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<String?>(
@@ -186,18 +205,41 @@ class _HomePageState extends State<HomePage> {
                   height: 450,
                 ),
                 TextButton(
-                    onPressed: () async {
-                      if (getCurrentUser() != null) {
-                        Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  ProfilePage(user: getCurrentUser()!)),
-                        );
-                      } else {
-                        null;
+                  onPressed: () async {
+                    if (getCurrentUser() != null) {
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                ProfilePage(user: getCurrentUser()!)),
+                      );
+                    } else {
+                      null;
+                    }
+                  },
+                  child: FutureBuilder<UserProfile?>(
+                    future: getUserProfile(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const CircularProgressIndicator();
                       }
+
+                      final userProfile = snapshot.data;
+
+                      if (userProfile == null) {
+                        return const SizedBox.shrink();
+                      }
+
+                      return ListTile(
+                        title: Text(userProfile.displayName!),
+                        subtitle: Text(userProfile.email),
+                        leading: CircleAvatar(
+                          backgroundImage:
+                              NetworkImage(userProfile.profilePictureUrl!),
+                        ),
+                      );
                     },
-                    child: Text(getCurrentUser()?.displayName ?? 'Unknown')),
+                  ),
+                ),
                 TextButton(
                     onPressed: () async {
                       await FirebaseAuth.instance.signOut();

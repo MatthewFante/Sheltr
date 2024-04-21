@@ -56,7 +56,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Availability set to ${isAvailable ? "Yes" : "No"}',
+            'Marked ${isAvailable ? "available" : "unavailable"}',
           ),
         ),
       );
@@ -142,6 +142,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                   },
                 ),
               ),
+
             const SizedBox(height: 16.0),
             Text('Breed: ${widget.pet.breed}',
                 style: const TextStyle(fontSize: 18.0)),

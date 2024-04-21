@@ -106,7 +106,6 @@ class _PetsPageState extends State<PetsPage> {
               final pet = pets[index];
               return GestureDetector(
                 onTap: () {
-                  // Navigate to the pet profile page
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -114,15 +113,35 @@ class _PetsPageState extends State<PetsPage> {
                     ),
                   );
                 },
-                child: AspectRatio(
-                  aspectRatio: 1.0, // Ensure each image is square
-                  child: pet.imageUrls.isNotEmpty
-                      ? Image.network(
-                          pet.imageUrls.first, // Display the first image
-                          fit: BoxFit.cover,
-                        )
-                      : Image.asset(
-                          'lib/assets/placeholder.jpeg'), // Display a placeholder if no image URLs
+                child: Stack(
+                  children: [
+                    AspectRatio(
+                      aspectRatio: 1.0, // Ensure each image is square
+                      child: pet.imageUrls.isNotEmpty
+                          ? Image.network(
+                              pet.imageUrls.first, // Display the first image
+                              fit: BoxFit.cover,
+                            )
+                          : Image.asset(
+                              'lib/assets/placeholder.jpeg', // Display a placeholder if no image URLs
+                            ),
+                    ),
+                    if (!pet.available) // Apply overlay if not available
+                      Container(
+                        color:
+                            Colors.grey.withOpacity(0.5), // Light grey overlay
+                        child: const Center(
+                          child: Text(
+                            'Not Available',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               );
             },
