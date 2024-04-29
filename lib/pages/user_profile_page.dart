@@ -100,11 +100,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
         title: const Text('User Profile'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (context) => const MenuScaffold()),
-            );
-          },
+          onPressed: () => Navigator.of(context).pop(),
         ),
       ),
       body: _isLoading

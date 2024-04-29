@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
+import 'package:untitled/assets/palatte.dart';
 import 'package:untitled/pages/appointments_page.dart';
 import 'package:untitled/pages/login_page.dart';
 import 'package:untitled/pages/pets_feed_page.dart';
@@ -24,21 +24,15 @@ class _MenuScaffoldState extends State<MenuScaffold> {
     return FirebaseAuth.instance.currentUser;
   }
 
-  Future<UserProfile?> getUserProfile(User? user) async {
-    if (user == null) {
-      return null; // No user is signed in
-    }
-
-    final userProfileDoc = await FirebaseFirestore.instance
+  Future<UserProfile?> getUserProfile(String uid) async {
+    final doc = await FirebaseFirestore.instance
         .collection('user_profiles')
-        .doc(user.uid)
+        .doc(uid)
         .get();
-
-    if (userProfileDoc.exists) {
-      return UserProfile.fromDocumentSnapshot(userProfileDoc);
-    } else {
-      return null; // No profile found
+    if (doc.exists) {
+      return UserProfile.fromDocumentSnapshot(doc);
     }
+    return null;
   }
 
   @override
@@ -67,7 +61,7 @@ class _MenuScaffoldState extends State<MenuScaffold> {
 
           if (user != null) {
             return FutureBuilder<UserProfile?>(
-              future: getUserProfile(user),
+              future: getUserProfile(user.uid),
               builder: (context, profileSnapshot) {
                 if (profileSnapshot.connectionState ==
                     ConnectionState.waiting) {
@@ -82,7 +76,7 @@ class _MenuScaffoldState extends State<MenuScaffold> {
                 } else if (userRole == 'shelter') {
                   pages.add(RequestsPage());
                 } else if (userRole == 'admin') {
-                  pages.add(ApprovalsPage());
+                  pages.add(const ApprovalsPage());
                 }
 
                 return buildContent(pages);
@@ -90,7 +84,7 @@ class _MenuScaffoldState extends State<MenuScaffold> {
             );
           }
 
-          return buildContent(pages); // For non-logged-in users
+          return buildContent(pages);
         },
       ),
       bottomNavigationBar: buildBottomNavigationBar(),
@@ -159,26 +153,31 @@ class _MenuScaffoldState extends State<MenuScaffold> {
 
         final user = userSnapshot.data;
 
-        return Drawer(
-          child: ListView(
-            children: [
-              const DrawerHeader(
-                child: Text(
-                  'Sheltr 🐾',
-                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+        if (user == null) {
+          return Drawer(
+            child: ListView(
+              children: [
+                Container(
+                  height: 100,
+                  child: const DrawerHeader(
+                    child: Text(
+                      'Sheltr 🐾',
+                      style:
+                          TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                    ),
+                  ),
                 ),
-              ),
-              ListTile(
-                leading: const Icon(Icons.pets),
-                title: Text('Pets'),
-                onTap: () {
-                  setState(() {
-                    _currentIndex = 0;
-                    Navigator.pop(context); // Close the drawer
-                  });
-                },
-              ),
-              if (user == null) ...[
+                ListTile(
+                  leading: const Icon(Icons.pets),
+                  title: const Text('Pets'),
+                  onTap: () {
+                    setState(() {
+                      _currentIndex = 0;
+                      Navigator.pop(context);
+                    });
+                  },
+                ),
+                const SizedBox(height: 580),
                 ListTile(
                   leading: const Icon(Icons.login),
                   title: const Text('Login'),
@@ -191,36 +190,82 @@ class _MenuScaffoldState extends State<MenuScaffold> {
                   },
                 ),
               ],
-              if (user != null) ...[
-                ListTile(
-                  leading: const Icon(Icons.account_circle),
-                  title: Text(user.displayName ?? 'User Profile'),
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => UserProfilePage(
-                          user: user,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.exit_to_app),
-                  title: const Text('Sign Out'),
-                  onTap: () async {
-                    await FirebaseAuth.instance.signOut();
+            ),
+          );
+        }
 
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(
-                        builder: (context) => const MenuScaffold(),
+        return FutureBuilder<UserProfile?>(
+          future: getUserProfile(user.uid),
+          builder: (context, profileSnapshot) {
+            if (profileSnapshot.connectionState == ConnectionState.waiting) {
+              return const CircularProgressIndicator();
+            }
+
+            final userProfile = profileSnapshot.data;
+
+            return Drawer(
+              child: ListView(
+                children: [
+                  Container(
+                    height: 100,
+                    child: const DrawerHeader(
+                      child: Text(
+                        'Sheltr 🐾',
+                        style: TextStyle(
+                            fontSize: 30, fontWeight: FontWeight.bold),
                       ),
-                    );
-                  },
-                ),
-              ],
-            ],
-          ),
+                    ),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.pets),
+                    title: const Text('Pets'),
+                    onTap: () {
+                      setState(() {
+                        _currentIndex = 0;
+                        Navigator.pop(context);
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 550),
+                  ListTile(
+                    leading: userProfile?.profilePictureUrl != null
+                        ? CircleAvatar(
+                            radius: 20,
+                            backgroundImage:
+                                NetworkImage(userProfile!.profilePictureUrl!),
+                          )
+                        : const Icon(Icons.account_circle),
+                    title: Text(userProfile?.displayName ?? 'User Profile'),
+                    subtitle: Text(userProfile?.email ?? ''),
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => UserProfilePage(
+                            user: user,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  ElevatedButton(
+                      style: ButtonStyle(
+                        elevation: MaterialStateProperty.all<double>(0),
+                      ),
+                      onPressed: () async {
+                        await FirebaseAuth.instance.signOut();
+
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                            builder: (context) => const MenuScaffold(),
+                          ),
+                        );
+                      },
+                      child: const Text('Sign Out',
+                          style: TextStyle(color: Color(0xff990000))))
+                ],
+              ),
+            );
+          },
         );
       },
     );
