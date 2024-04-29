@@ -17,11 +17,68 @@ class PetProfilePage extends StatefulWidget {
 
 class _PetProfilePageState extends State<PetProfilePage> {
   late bool isAvailable;
+  bool isFavorite = false;
 
   @override
   void initState() {
     super.initState();
     isAvailable = widget.pet.available; // Initialize availability status
+  }
+
+  void _checkIfFavorite() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      return;
+    }
+
+    final userDoc = await FirebaseFirestore.instance
+        .collection('user_profiles')
+        .doc(currentUser.uid)
+        .get();
+
+    if (userDoc.exists) {
+      final userProfile = UserProfile.fromDocumentSnapshot(userDoc);
+      final favoritePets = userProfile.favoritePets ?? [];
+      setState(() {
+        isFavorite = favoritePets.contains(widget.pet
+            .documentId); // Check if this pet is in the user's favorite list
+      });
+    }
+  }
+
+  void _toggleFavorite() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      return;
+    }
+
+    final userDoc = FirebaseFirestore.instance
+        .collection('user_profiles')
+        .doc(currentUser.uid);
+
+    if (isFavorite) {
+      // Remove pet from favorites
+      await userDoc.update({
+        'favoritePets': FieldValue.arrayRemove([widget.pet.documentId]),
+      });
+      setState(() {
+        isFavorite = false; // Update local state
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Removed from favorites.")),
+      );
+    } else {
+      // Add pet to favorites
+      await userDoc.update({
+        'favoritePets': FieldValue.arrayUnion([widget.pet.documentId]),
+      });
+      setState(() {
+        isFavorite = true; // Update local state
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Added to favorites.")),
+      );
+    }
   }
 
   Future<String> getCurrentUserType() async {
@@ -124,6 +181,15 @@ class _PetProfilePageState extends State<PetProfilePage> {
           'Pet Details',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              isFavorite ? Icons.star : Icons.star_border,
+              color: Colors.white,
+            ),
+            onPressed: _toggleFavorite, // Toggle favorite status
+          ),
+        ],
       ),
       body: Stack(
         children: [

@@ -61,6 +61,7 @@ class _NewMeetAndGreetRequestModalState
     final pickedTime = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
+      initialEntryMode: TimePickerEntryMode.input,
     );
 
     if (pickedTime != null) {
@@ -127,19 +128,19 @@ class _NewMeetAndGreetRequestModalState
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(
+              const Text(
                 "Request a Meet & Greet",
                 style: TextStyle(
                   fontSize: 20.0,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(height: 16.0),
+              const SizedBox(height: 16.0),
               // Date Picker
               TextFormField(
                 controller: _dateController,
                 readOnly: true,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: "Meet Date",
                   suffixIcon: Icon(Icons.calendar_today),
                 ),
@@ -151,12 +152,12 @@ class _NewMeetAndGreetRequestModalState
                   return null;
                 },
               ),
-              SizedBox(height: 16.0),
+              const SizedBox(height: 16.0),
               // Time Picker
               TextFormField(
                 controller: _timeController,
                 readOnly: true,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: "Meet Time",
                   suffixIcon: Icon(Icons.access_time),
                 ),
@@ -168,20 +169,20 @@ class _NewMeetAndGreetRequestModalState
                   return null;
                 },
               ),
-              SizedBox(height: 16.0),
+              const SizedBox(height: 16.0),
               // Notes Field
               TextFormField(
                 controller: _notesController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: "Notes (optional)",
                 ),
                 maxLines: 2,
               ),
-              SizedBox(height: 16.0),
+              const SizedBox(height: 16.0),
               // Submit Button
               ElevatedButton(
                 onPressed: _createMeetAndGreetRequest,
-                child: Text("Submit Request"),
+                child: const Text("Submit Request"),
               ),
             ],
           ),

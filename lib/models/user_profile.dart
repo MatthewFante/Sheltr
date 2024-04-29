@@ -6,6 +6,7 @@ class UserProfile {
   final String? displayName;
   final String userType; // Can be 'admin', 'shelter', or 'user'
   final String? profilePictureUrl; // Optional profile picture
+  final List<String>? favoritePets; // Optional list of pet IDs
 
   UserProfile({
     required this.userId,
@@ -13,6 +14,7 @@ class UserProfile {
     required this.userType,
     this.displayName,
     this.profilePictureUrl,
+    this.favoritePets,
   });
 
   // Method to create UserProfile object from Firestore DocumentSnapshot
@@ -25,6 +27,9 @@ class UserProfile {
           data['userType'] ?? 'user', // Default to 'user' if not specified
       displayName: data['displayName'],
       profilePictureUrl: data['profilePictureUrl'],
+      favoritePets: data['favoritePets'] != null
+          ? List<String>.from(data['favoritePets'])
+          : null,
     );
   }
 
@@ -36,6 +41,7 @@ class UserProfile {
       'userType': userType,
       'displayName': displayName,
       'profilePictureUrl': profilePictureUrl,
+      'favoritePets': favoritePets,
     };
   }
 
@@ -51,6 +57,9 @@ class UserProfile {
       displayName: map.containsKey('displayName') ? map['displayName'] : null,
       profilePictureUrl: map.containsKey('profilePictureUrl')
           ? map['profilePictureUrl']
+          : null,
+      favoritePets: map.containsKey('favoritePets')
+          ? List<String>.from(map['favoritePets'])
           : null,
     );
   }
