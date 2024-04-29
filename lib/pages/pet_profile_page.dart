@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:untitled/models/pet.dart';
 import 'package:untitled/models/user_profile.dart';
 import 'package:untitled/widgets/edit_pet_profile_modal.dart';
+import 'package:untitled/widgets/new_meet_and_greet_request_modal.dart';
 
 class PetProfilePage extends StatefulWidget {
   final Pet pet;
@@ -218,6 +219,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                         fontSize: 18.0, fontWeight: FontWeight.bold)),
                 Text(widget.pet.description,
                     style: const TextStyle(fontSize: 18.0)),
+                const SizedBox(height: 65),
               ],
             ),
           ),
@@ -249,7 +251,12 @@ class _PetProfilePageState extends State<PetProfilePage> {
                                     fixedSize: MaterialStateProperty.all<Size>(
                                         const Size(250, 60))),
                                 onPressed: () {
-                                  // Implement logic for meet & greet request
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) =>
+                                        NewMeetAndGreetRequestModal(
+                                            pet: widget.pet),
+                                  );
                                 },
                                 child: const Text('Request a Meet & Greet',
                                     style: TextStyle(color: Color(0xff990000))),
@@ -292,18 +299,6 @@ class _PetProfilePageState extends State<PetProfilePage> {
                                 child: const Text('Edit Pet',
                                     style: TextStyle(color: Color(0xff990000))),
                               ),
-                              // ElevatedButton(
-                              //   style: ButtonStyle(
-                              //       fixedSize: MaterialStateProperty.all<Size>(
-                              //           const Size(170, 60))),
-                              //   onPressed: toggleAvailability,
-                              //   child: Text(
-                              //       isAvailable
-                              //           ? 'Mark Unavailable'
-                              //           : 'Mark Available',
-                              //       style: const TextStyle(
-                              //           color: Color(0xff990000))),
-                              // ),
                               ElevatedButton(
                                 style: ButtonStyle(
                                     fixedSize: MaterialStateProperty.all<Size>(

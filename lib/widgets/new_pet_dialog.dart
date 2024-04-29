@@ -73,7 +73,8 @@ class _NewPetDialogState extends State<NewPetDialog> {
                 decoration: const InputDecoration(
                   hintText: 'Species',
                 ),
-                items: ['Dog', 'Cat', 'Other'].map((species) {
+                items:
+                    ['Dog', 'Cat', 'Reptile', 'Bird', 'Other'].map((species) {
                   return DropdownMenuItem<String>(
                     value: species,
                     child: Text(species),
