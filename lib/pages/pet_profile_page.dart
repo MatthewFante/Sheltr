@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:untitled/models/pet.dart';
 import 'package:untitled/models/user_profile.dart';
+import 'package:untitled/widgets/edit_pet_profile_modal.dart';
 
 class PetProfilePage extends StatefulWidget {
   final Pet pet;
@@ -281,10 +282,15 @@ class _PetProfilePageState extends State<PetProfilePage> {
                                 style: ButtonStyle(
                                     fixedSize: MaterialStateProperty.all<Size>(
                                         const Size(170, 60))),
-                                onPressed: null,
-                                child: Text('Edit Pet',
-                                    style: const TextStyle(
-                                        color: Color(0xff990000))),
+                                onPressed: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) =>
+                                        EditPetProfileModal(pet: widget.pet),
+                                  );
+                                },
+                                child: const Text('Edit Pet',
+                                    style: TextStyle(color: Color(0xff990000))),
                               ),
                               // ElevatedButton(
                               //   style: ButtonStyle(

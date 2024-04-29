@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:untitled/models/upgrade_request.dart';
 import 'package:untitled/models/user_profile.dart';
 import 'package:untitled/pages/pets_feed_page.dart';
-import 'package:untitled/widgets/edit_profile_modal.dart';
+import 'package:untitled/widgets/edit_user_profile_modal.dart';
 import 'package:untitled/pages/login_page.dart';
 import 'package:untitled/widgets/menu_scaffold.dart';
 
@@ -146,7 +146,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                 showDialog(
                                   context: context,
                                   builder: (BuildContext context) {
-                                    return EditProfileModal(
+                                    return EditUserProfileModal(
                                       userProfile: _userProfile!,
                                     );
                                   },

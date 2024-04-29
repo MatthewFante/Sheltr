@@ -3,16 +3,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:untitled/models/user_profile.dart';
 import 'package:untitled/widgets/image_upload_modal.dart';
 
-class EditProfileModal extends StatefulWidget {
+class EditUserProfileModal extends StatefulWidget {
   final UserProfile userProfile;
 
-  const EditProfileModal({required this.userProfile});
+  const EditUserProfileModal({required this.userProfile});
 
   @override
-  _EditProfileModalState createState() => _EditProfileModalState();
+  _EditUserProfileModalState createState() => _EditUserProfileModalState();
 }
 
-class _EditProfileModalState extends State<EditProfileModal> {
+class _EditUserProfileModalState extends State<EditUserProfileModal> {
   late TextEditingController _displayNameController;
   String? _profilePictureUrl;
   bool _isUpdating = false;
