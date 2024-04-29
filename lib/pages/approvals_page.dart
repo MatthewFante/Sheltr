@@ -82,9 +82,6 @@ class _ApprovalsPageState extends State<ApprovalsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Upgrade Approvals'),
-      ),
       body: StreamBuilder<List<UpgradeRequest>>(
         stream: getPendingRequests(),
         builder: (context, snapshot) {
@@ -133,6 +130,7 @@ class _ApprovalsPageState extends State<ApprovalsPage> {
 
                     return ListTile(
                       title: Text('Request from: $displayName'),
+                      leading: const Icon(Icons.person),
                       subtitle:
                           Text('Requested on: ${request.requestTime.toDate()}'),
                       trailing: Row(

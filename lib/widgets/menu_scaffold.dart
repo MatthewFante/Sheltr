@@ -1,12 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:untitled/pages/appointments_page.dart';
 import 'package:untitled/pages/login_page.dart';
 import 'package:untitled/pages/pets_feed_page.dart';
 import 'package:untitled/pages/approvals_page.dart';
 import 'package:untitled/pages/requests_page.dart';
-import 'package:untitled/pages/user_profile_page.dart'; // Adjust import if needed
+import 'package:untitled/pages/user_profile_page.dart';
 import 'package:untitled/models/user_profile.dart';
 
 class MenuScaffold extends StatefulWidget {
