@@ -117,109 +117,206 @@ class _PetProfilePageState extends State<PetProfilePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.pet.name),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Display pet images
-            if (widget.pet.imageUrls.isNotEmpty)
-              SizedBox(
-                height: 200,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: widget.pet.imageUrls.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8.0),
-                      child: Image.network(
-                        widget.pet.imageUrls[index],
-                        fit: BoxFit.cover,
-                      ),
-                    );
-                  },
-                ),
-              ),
-
-            const SizedBox(height: 16.0),
-            Text('Breed: ${widget.pet.breed}',
-                style: const TextStyle(fontSize: 18.0)),
-            Text('Size: ${widget.pet.size}',
-                style: const TextStyle(fontSize: 18.0)),
-            Text('Sex: ${widget.pet.sex}',
-                style: const TextStyle(fontSize: 18.0)),
-            Text(
-              'Age: ${widget.pet.age["years"]} years, ${widget.pet.age["months"]} months',
-              style: const TextStyle(fontSize: 18.0),
-            ),
-            Text(
-              'Available: ${isAvailable ? "Yes" : "No"}', // Display availability status
-              style: const TextStyle(fontSize: 18.0),
-            ),
-            const SizedBox(height: 300.0),
-            FutureBuilder<String>(
-              future: getCurrentUserType(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                }
-
-                if (snapshot.hasData && snapshot.data == 'user') {
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          // Implement logic for meet & greet request
-                        },
-                        child: const Text('Request a Meet & Greet'),
-                      ),
-                    ],
-                  );
-                } else {
-                  return const SizedBox(); // No meet & greet for non-users
-                }
-              },
-            ),
-
-            FutureBuilder<bool>(
-              future: getCurrentUserType().then((value) => value == 'admin'),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                }
-
-                if (snapshot.hasData &&
-                    (snapshot.data! ||
-                        currentUserId == widget.pet.createdByUserId)) {
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      ElevatedButton(
-                        onPressed: toggleAvailability,
-                        child: Text(isAvailable
-                            ? 'Mark Unavailable'
-                            : 'Mark Available'),
-                      ),
-                      ElevatedButton(
-                        onPressed: deletePet,
-                        child: const Text('Delete Pet'),
-                      ),
-                    ],
-                  );
-                } else {
-                  return const SizedBox(); // No admin or creator access
-                }
-              },
-            ),
-          ],
+        backgroundColor: const Color(0xff990000),
+        title: const Text(
+          'Pet Details',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
+      ),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Display pet images
+                if (widget.pet.imageUrls.isNotEmpty)
+                  SizedBox(
+                    height: 200,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: widget.pet.imageUrls.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: Image.network(
+                            widget.pet.imageUrls[index],
+                            fit: BoxFit.cover,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+                const SizedBox(height: 16.0),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Column(
+                      children: [
+                        const Text('Name',
+                            style: TextStyle(
+                                fontSize: 18.0, fontWeight: FontWeight.bold)),
+                        Text(widget.pet.name),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        const Text('Species',
+                            style: TextStyle(
+                                fontSize: 18.0, fontWeight: FontWeight.bold)),
+                        Text(widget.pet.species),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        const Text('Breed',
+                            style: TextStyle(
+                                fontSize: 18.0, fontWeight: FontWeight.bold)),
+                        Text(widget.pet.breed),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16.0),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Column(
+                      children: [
+                        const Text('Size',
+                            style: TextStyle(
+                                fontSize: 18.0, fontWeight: FontWeight.bold)),
+                        Text(widget.pet.size),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        const Text('Sex',
+                            style: TextStyle(
+                                fontSize: 18.0, fontWeight: FontWeight.bold)),
+                        Text(widget.pet.sex),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        const Text('Age',
+                            style: TextStyle(
+                                fontSize: 18.0, fontWeight: FontWeight.bold)),
+                        Text(
+                            '${widget.pet.age["years"]}yr, ${widget.pet.age["months"]}mo'),
+                      ],
+                    )
+                  ],
+                ),
+
+                const SizedBox(height: 16.0),
+                const Text('Description',
+                    style: const TextStyle(
+                        fontSize: 18.0, fontWeight: FontWeight.bold)),
+                Text(widget.pet.description,
+                    style: const TextStyle(fontSize: 18.0)),
+              ],
+            ),
+          ),
+          Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Container(
+                // color: Colors.white,
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    FutureBuilder<String>(
+                      future: getCurrentUserType(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+
+                        if (snapshot.hasData && snapshot.data == 'user') {
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              ElevatedButton(
+                                style: ButtonStyle(
+                                    fixedSize: MaterialStateProperty.all<Size>(
+                                        const Size(250, 60))),
+                                onPressed: () {
+                                  // Implement logic for meet & greet request
+                                },
+                                child: const Text('Request a Meet & Greet',
+                                    style: TextStyle(color: Color(0xff990000))),
+                              ),
+                            ],
+                          );
+                        } else {
+                          return const SizedBox(); // No meet & greet for non-users
+                        }
+                      },
+                    ),
+                    FutureBuilder<bool>(
+                      future: getCurrentUserType()
+                          .then((value) => value == 'admin'),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+
+                        if (snapshot.hasData &&
+                            (snapshot.data! ||
+                                currentUserId == widget.pet.createdByUserId)) {
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              ElevatedButton(
+                                style: ButtonStyle(
+                                    fixedSize: MaterialStateProperty.all<Size>(
+                                        const Size(170, 60))),
+                                onPressed: null,
+                                child: Text('Edit Pet',
+                                    style: const TextStyle(
+                                        color: Color(0xff990000))),
+                              ),
+                              // ElevatedButton(
+                              //   style: ButtonStyle(
+                              //       fixedSize: MaterialStateProperty.all<Size>(
+                              //           const Size(170, 60))),
+                              //   onPressed: toggleAvailability,
+                              //   child: Text(
+                              //       isAvailable
+                              //           ? 'Mark Unavailable'
+                              //           : 'Mark Available',
+                              //       style: const TextStyle(
+                              //           color: Color(0xff990000))),
+                              // ),
+                              ElevatedButton(
+                                style: ButtonStyle(
+                                    fixedSize: MaterialStateProperty.all<Size>(
+                                        const Size(170, 60))),
+                                onPressed: deletePet,
+                                child: const Text('Delete Pet',
+                                    style: TextStyle(color: Color(0xff990000))),
+                              ),
+                            ],
+                          );
+                        } else {
+                          return const SizedBox(); // No admin or creator access
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ))
+        ],
       ),
     );
   }
