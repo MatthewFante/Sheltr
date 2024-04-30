@@ -240,7 +240,7 @@ class _MenuScaffoldState extends State<MenuScaffold> {
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (context) => UserProfilePage(
-                            user: user,
+                            userId: user.uid,
                           ),
                         ),
                       );

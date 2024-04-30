@@ -24,8 +24,10 @@ class LoginPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sheltr',
+        backgroundColor: const Color(0xff990000),
+        title: const Text('Sheltr🐾',
             style: TextStyle(
+              color: Colors.white,
               fontSize: 30,
               fontWeight: FontWeight.bold,
             )),

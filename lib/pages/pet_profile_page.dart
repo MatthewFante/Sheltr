@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:untitled/models/pet.dart';
 import 'package:untitled/models/user_profile.dart';
+import 'package:untitled/pages/user_profile_page.dart';
 import 'package:untitled/widgets/edit_pet_profile_modal.dart';
 import 'package:untitled/widgets/new_meet_and_greet_request_modal.dart';
 
@@ -29,7 +30,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
   void _checkIfFavorite() async {
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) {
-      return;
+      return; // Return early if there's no logged-in user
     }
 
     final userDoc = await FirebaseFirestore.instance
@@ -49,7 +50,11 @@ class _PetProfilePageState extends State<PetProfilePage> {
   void _toggleFavorite() async {
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) {
-      return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text("You must be logged in to favorite a pet.")),
+      );
+      return; // No action if user is not logged in
     }
 
     final userDoc = FirebaseFirestore.instance
@@ -57,7 +62,6 @@ class _PetProfilePageState extends State<PetProfilePage> {
         .doc(currentUser.uid);
 
     if (isFavorite) {
-      // Remove pet from favorites
       await userDoc.update({
         'favoritePets': FieldValue.arrayRemove([widget.pet.documentId]),
       });
@@ -68,7 +72,6 @@ class _PetProfilePageState extends State<PetProfilePage> {
         const SnackBar(content: Text("Removed from favorites.")),
       );
     } else {
-      // Add pet to favorites
       await userDoc.update({
         'favoritePets': FieldValue.arrayUnion([widget.pet.documentId]),
       });
@@ -78,6 +81,26 @@ class _PetProfilePageState extends State<PetProfilePage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Added to favorites.")),
       );
+    }
+  }
+
+  Future<UserProfile?> _getCreatorProfile() async {
+    try {
+      final creatorId = widget.pet.createdByUserId;
+      final doc = await FirebaseFirestore.instance
+          .collection('user_profiles')
+          .doc(creatorId)
+          .get();
+
+      if (doc.exists) {
+        return UserProfile.fromDocumentSnapshot(
+            doc); // Return creator's profile
+      } else {
+        return null; // No profile found
+      }
+    } catch (e) {
+      debugPrint("Error fetching creator profile: $e");
+      return null; // Return null on error
     }
   }
 
@@ -107,6 +130,15 @@ class _PetProfilePageState extends State<PetProfilePage> {
   }
 
   void toggleAvailability() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text("You must be logged in to update availability.")),
+      );
+      return; // No action if user is not logged in
+    }
+
     try {
       await Pet.updatePetAvailability(widget.pet.documentId, !isAvailable);
       setState(() {
@@ -129,6 +161,14 @@ class _PetProfilePageState extends State<PetProfilePage> {
   }
 
   void deletePet() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("You must be logged in to delete a pet.")),
+      );
+      return; // No action if user is not logged in
+    }
+
     final confirmDelete = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
@@ -172,8 +212,6 @@ class _PetProfilePageState extends State<PetProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xff990000),
@@ -191,10 +229,9 @@ class _PetProfilePageState extends State<PetProfilePage> {
 
               if (snapshot.hasError || snapshot.data != "user") {
                 return const SizedBox
-                    .shrink(); // Don't show anything if not user type
+                    .shrink(); // No favorite option for non-users
               }
 
-              // Show the favorite toggle only if user type is 'user'
               return IconButton(
                 icon: Icon(
                   isFavorite ? Icons.star : Icons.star_border,
@@ -213,7 +250,6 @@ class _PetProfilePageState extends State<PetProfilePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Display pet images
                 if (widget.pet.imageUrls.isNotEmpty)
                   SizedBox(
                     height: 200,
@@ -231,7 +267,6 @@ class _PetProfilePageState extends State<PetProfilePage> {
                       },
                     ),
                   ),
-
                 const SizedBox(height: 16.0),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -293,111 +328,144 @@ class _PetProfilePageState extends State<PetProfilePage> {
                     )
                   ],
                 ),
+                FutureBuilder<UserProfile?>(
+                  future: _getCreatorProfile(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const CircularProgressIndicator(); // Show loading indicator while fetching creator profile
+                    }
 
-                const SizedBox(height: 16.0),
-                const Text('Description',
-                    style: const TextStyle(
-                        fontSize: 18.0, fontWeight: FontWeight.bold)),
-                Text(widget.pet.description,
-                    style: const TextStyle(fontSize: 18.0)),
-                const SizedBox(height: 65),
+                    if (snapshot.hasError || snapshot.data == null) {
+                      return Center(
+                        child: Text(
+                          "Created by: ${widget.pet.createdByUserId}",
+                        ), // Show creator ID if profile not found
+                      );
+                    }
+
+                    final creatorProfile = snapshot.data!;
+                    return Center(
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => UserProfilePage(
+                                      userId: creatorProfile
+                                          .userId))); // Open creator's profile
+                        },
+                        child: Text(
+                            "@ ${creatorProfile.displayName ?? "Unknown"}"),
+                      ),
+                    ); // Show creator's displayName
+                  },
+                ),
+                Container(
+                  padding: const EdgeInsets.all(16.0),
+                  alignment: Alignment.topLeft,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  child: Text(widget.pet.description),
+                ),
+                const SizedBox(height: 85),
               ],
             ),
           ),
           Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: Container(
-                // color: Colors.white,
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    FutureBuilder<String>(
-                      future: getCurrentUserType(),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        }
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  FutureBuilder<String>(
+                    future: getCurrentUserType(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
 
-                        if (snapshot.hasData && snapshot.data == 'user') {
-                          return Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              ElevatedButton(
-                                style: ButtonStyle(
-                                    fixedSize: MaterialStateProperty.all<Size>(
-                                        const Size(250, 60))),
-                                onPressed: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) =>
-                                        NewMeetAndGreetRequestModal(
-                                            pet: widget.pet),
-                                  );
-                                },
-                                child: const Text('Request a Meet & Greet',
-                                    style: TextStyle(color: Color(0xff990000))),
-                              ),
-                            ],
-                          );
-                        } else {
-                          return const SizedBox(); // No meet & greet for non-users
-                        }
-                      },
-                    ),
-                    FutureBuilder<bool>(
-                      future: getCurrentUserType()
-                          .then((value) => value == 'admin'),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        }
+                      if (snapshot.hasData && snapshot.data == 'user') {
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            ElevatedButton(
+                              style: ButtonStyle(
+                                  fixedSize: MaterialStateProperty.all(
+                                      const Size(250, 60))),
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) =>
+                                      NewMeetAndGreetRequestModal(
+                                          pet: widget.pet),
+                                );
+                              },
+                              child: const Text('Request a Meet & Greet',
+                                  style: TextStyle(color: Color(0xff990000))),
+                            ),
+                          ],
+                        );
+                      } else {
+                        return const SizedBox(); // No meet-and-greet for non-users
+                      }
+                    },
+                  ),
+                  FutureBuilder<bool>(
+                    future:
+                        getCurrentUserType().then((value) => value == 'admin'),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
 
-                        if (snapshot.hasData &&
-                            (snapshot.data! ||
-                                currentUserId == widget.pet.createdByUserId)) {
-                          return Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              ElevatedButton(
-                                style: ButtonStyle(
-                                    fixedSize: MaterialStateProperty.all<Size>(
-                                        const Size(170, 60))),
-                                onPressed: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) =>
-                                        EditPetProfileModal(pet: widget.pet),
-                                  );
-                                },
-                                child: const Text('Edit Pet',
-                                    style: TextStyle(color: Color(0xff990000))),
+                      if (snapshot.hasData &&
+                          (snapshot.data! ||
+                              FirebaseAuth.instance.currentUser?.uid ==
+                                  widget.pet.createdByUserId)) {
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            ElevatedButton(
+                              style: ButtonStyle(
+                                  fixedSize: MaterialStateProperty.all(
+                                      const Size(150, 60))),
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) =>
+                                      EditPetProfileModal(pet: widget.pet),
+                                );
+                              },
+                              child: const Text(
+                                'Edit Pet',
                               ),
-                              ElevatedButton(
-                                style: ButtonStyle(
-                                    fixedSize: MaterialStateProperty.all<Size>(
-                                        const Size(170, 60))),
-                                onPressed: deletePet,
-                                child: const Text('Delete Pet',
-                                    style: TextStyle(color: Color(0xff990000))),
-                              ),
-                            ],
-                          );
-                        } else {
-                          return const SizedBox(); // No admin or creator access
-                        }
-                      },
-                    ),
-                  ],
-                ),
-              ))
+                            ),
+                            ElevatedButton(
+                              style: ButtonStyle(
+                                  fixedSize: MaterialStateProperty.all(
+                                      const Size(150, 60))),
+                              onPressed: deletePet,
+                              child: const Text('Delete Pet'),
+                            ),
+                          ],
+                        );
+                      } else {
+                        return const SizedBox();
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );

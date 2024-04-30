@@ -1,30 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:untitled/models/upgrade_request.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:untitled/models/user_profile.dart';
+import 'package:untitled/models/upgrade_request.dart';
 import 'package:untitled/widgets/edit_user_profile_modal.dart';
 import 'package:untitled/widgets/menu_scaffold.dart';
 
 class UserProfilePage extends StatefulWidget {
-  final User user;
+  final String userId; // The ID of the profile to be viewed
 
-  const UserProfilePage({super.key, required this.user});
+  const UserProfilePage({super.key, required this.userId});
 
   @override
   _UserProfilePageState createState() => _UserProfilePageState();
 }
 
 class _UserProfilePageState extends State<UserProfilePage> {
-  late User _currentUser;
-  UserProfile? _userProfile;
+  UserProfile? _userProfile; // Holds the fetched user profile
   bool _isLoading = true;
   String _error = '';
 
   @override
   void initState() {
     super.initState();
-    _currentUser = widget.user;
     _fetchUserProfile();
   }
 
@@ -32,7 +30,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     try {
       final doc = await FirebaseFirestore.instance
           .collection('user_profiles')
-          .doc(_currentUser.uid)
+          .doc(widget.userId)
           .get();
 
       if (doc.exists) {
@@ -53,7 +51,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     try {
       final query = await FirebaseFirestore.instance
           .collection('upgrade_requests')
-          .where('uid', isEqualTo: _currentUser.uid)
+          .where('uid', isEqualTo: widget.userId) // Use the correct userId
           .where('status', isEqualTo: 'pending')
           .get();
 
@@ -66,7 +64,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
       }
 
       final upgradeRequest = UpgradeRequest(
-        uid: _currentUser.uid,
+        uid: widget.userId, // Use the correct userId
         status: 'pending',
         requestTime: Timestamp.now(),
         requestId: '',
@@ -119,7 +117,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('User Profile'),
+        title: const Text('Profile'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
@@ -150,9 +148,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
               children: [
                 const Padding(
                   padding: EdgeInsets.all(20.0),
-                  child: Icon(
-                    Icons.email,
-                  ),
+                  child: Icon(Icons.email),
                 ),
                 Text(
                   _userProfile?.email ?? "Unknown",
@@ -166,9 +162,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 children: [
                   const Padding(
                     padding: EdgeInsets.all(20.0),
-                    child: Icon(
-                      Icons.phone,
-                    ),
+                    child: Icon(Icons.phone),
                   ),
                   Text(
                     '${_userProfile!.phoneNumber}',
@@ -180,12 +174,16 @@ class _UserProfilePageState extends State<UserProfilePage> {
               Row(
                 children: [
                   const Padding(
-                    padding: EdgeInsets.all(20.0),
+                    padding: EdgeInsets.all(20),
                     child: Icon(Icons.account_circle),
                   ),
-                  Text(
-                    '${_userProfile!.bio}',
-                    style: Theme.of(context).textTheme.bodyLarge,
+                  SizedBox(
+                    width: 300, // Use width to fit longer text
+                    child: Text(
+                      '${_userProfile!.bio}',
+                      overflow:
+                          TextOverflow.visible, // Allow overflow to wrap text
+                    ),
                   ),
                 ],
               ),
@@ -193,108 +191,114 @@ class _UserProfilePageState extends State<UserProfilePage> {
               Row(
                 children: [
                   const Padding(
-                    padding: EdgeInsets.all(20.0),
+                    padding: EdgeInsets.all(20),
                     child: Icon(Icons.location_on),
                   ),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (_userProfile?.address != null)
+                      if (_userProfile?.address != null &&
+                          _userProfile!.address!.isNotEmpty)
                         Text(
                           '${_userProfile!.address}',
                           style: Theme.of(context).textTheme.bodyLarge,
                         ),
                       Row(
                         children: [
-                          if (_userProfile?.city != null)
+                          if (_userProfile!.city != null)
                             Text(
                               '${_userProfile!.city}',
                               style: Theme.of(context).textTheme.bodyLarge,
                             ),
-                          if (_userProfile?.city != null &&
-                              _userProfile!.state != null)
+                          if (_userProfile!.state != null &&
+                              _userProfile!.city != null)
                             const Text(", "),
-                          if (_userProfile?.state != null)
+                          if (_userProfile!.state != null)
                             Text(
                               '${_userProfile!.state}',
                               style: Theme.of(context).textTheme.bodyLarge,
                             ),
-                          if (_userProfile?.zipCode != null)
-                            Text(
-                              ' ${_userProfile!.zipCode}',
-                              style: Theme.of(context).textTheme.bodyLarge,
-                            ),
+                          Text(
+                            ' ${_userProfile!.zipCode}', // Zip code should be shown if available
+                            style: Theme.of(context).textTheme.bodyLarge,
+                          ),
                         ],
                       ),
                     ],
                   ),
                 ],
               ),
-              Row(children: [
-                const Padding(
-                  padding: EdgeInsets.all(20.0),
-                  child: Icon(Icons.access_time),
-                ),
-                if (_userProfile?.hoursOfOperation != null)
+              if (_userProfile?.hoursOfOperation != null &&
+                  _userProfile!.hoursOfOperation!.isNotEmpty)
+                Row(children: [
+                  const Padding(
+                    padding: EdgeInsets.all(20),
+                    child: Icon(Icons.access_time),
+                  ),
                   Text(
                     '${_userProfile!.hoursOfOperation}',
                     style: Theme.of(context).textTheme.bodyLarge,
                   ),
-              ]),
-              Row(children: [
-                const Padding(
-                  padding: EdgeInsets.all(20.0),
-                  child: Icon(Icons.web),
-                ),
-                if (_userProfile?.website != null)
+                ]),
+              if (_userProfile?.website != null &&
+                  _userProfile!.website!.isNotEmpty)
+                Row(children: [
+                  const Padding(
+                    padding: EdgeInsets.all(20),
+                    child: Icon(Icons.web),
+                  ),
                   Text(
                     '${_userProfile!.website}',
                     style: Theme.of(context).textTheme.bodyLarge,
                   ),
-              ])
+                ]),
             ],
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    if (_userProfile != null) {
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return EditUserProfileModal(
-                            userProfile: _userProfile!,
-                          );
-                        },
-                      ).then((_) {
-                        _fetchUserProfile(); // Refresh after editing
-                      });
-                    }
-                  },
-                  child: const Text("Edit Profile"),
+            // Check if there's a logged-in user before showing these options
+            if (FirebaseAuth.instance.currentUser != null) ...[
+              if (_userProfile?.userId ==
+                  FirebaseAuth.instance.currentUser!.uid)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        if (_userProfile != null) {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return EditUserProfileModal(
+                                userProfile: _userProfile!,
+                              );
+                            },
+                          ).then((_) {
+                            _fetchUserProfile(); // Refresh after editing
+                          });
+                        }
+                      },
+                      child: const Text("Edit Profile"),
+                    ),
+                    ElevatedButton(
+                      onPressed: () async {
+                        await FirebaseAuth.instance.signOut();
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                            builder: (context) => const MenuScaffold(),
+                          ),
+                        );
+                      },
+                      child: const Text("Sign Out"),
+                    ),
+                  ],
                 ),
-                ElevatedButton(
-                  onPressed: () async {
-                    await FirebaseAuth.instance.signOut();
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(
-                        builder: (context) => const MenuScaffold(),
-                      ),
-                    );
-                  },
-                  child: const Text("Sign Out"),
+              if (FirebaseAuth.instance.currentUser!.uid ==
+                  _userProfile?.userId)
+                Center(
+                  child: ElevatedButton(
+                    onPressed: sendUpgradeRequest,
+                    child: const Text("Upgrade Account"),
+                  ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Center(
-              child: _userProfile?.userType == 'user'
-                  ? ElevatedButton(
-                      onPressed: sendUpgradeRequest,
-                      child: const Text("Upgrade Account"),
-                    )
-                  : const SizedBox.shrink(),
-            ),
+            ],
           ],
         ),
       ),
