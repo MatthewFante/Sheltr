@@ -3,14 +3,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:untitled/models/pet.dart';
 import 'package:untitled/widgets/image_upload_modal.dart';
 
-class NewPetDialog extends StatefulWidget {
-  const NewPetDialog({Key? key}) : super(key: key);
+class NewPetModal extends StatefulWidget {
+  const NewPetModal({Key? key}) : super(key: key);
 
   @override
-  _NewPetDialogState createState() => _NewPetDialogState();
+  _NewPetModalState createState() => _NewPetModalState();
 }
 
-class _NewPetDialogState extends State<NewPetDialog> {
+class _NewPetModalState extends State<NewPetModal> {
   final nameController = TextEditingController();
   String? selectedSpecies;
   final breedController = TextEditingController();

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:untitled/models/pet.dart';
 import 'package:untitled/pages/pet_profile_page.dart';
-import 'package:untitled/widgets/new_pet_dialog.dart';
+import 'package:untitled/widgets/new_pet_modal.dart';
 import 'package:untitled/models/user_profile.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -158,7 +158,7 @@ class _PetsFeedPageState extends State<PetsFeedPage> {
             showDialog(
               context: context,
               builder: (BuildContext context) {
-                return const NewPetDialog();
+                return const NewPetModal();
               },
             );
           },
