@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:untitled/models/pet.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class EditPetProfileModal extends StatefulWidget {
   final Pet pet;
@@ -172,7 +171,7 @@ class _EditPetProfileModalState extends State<EditPetProfileModal> {
                     child: DropdownButtonFormField<int>(
                       value: _selectedAgeYears,
                       decoration: InputDecoration(labelText: "Age (years)"),
-                      items: List.generate(20, (i) => i)
+                      items: List.generate(30, (i) => i)
                           .map((year) => DropdownMenuItem(
                               value: year, child: Text(year.toString())))
                           .toList(),

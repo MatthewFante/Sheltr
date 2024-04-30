@@ -3,9 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:untitled/models/upgrade_request.dart';
 import 'package:untitled/models/user_profile.dart';
-import 'package:untitled/pages/pets_feed_page.dart';
 import 'package:untitled/widgets/edit_user_profile_modal.dart';
-import 'package:untitled/pages/login_page.dart';
 import 'package:untitled/widgets/menu_scaffold.dart';
 
 class UserProfilePage extends StatefulWidget {
@@ -43,7 +41,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
         _error = 'User profile not found';
       }
     } catch (e) {
-      _error = 'Error fetching user profile';
+      _error = 'Error fetching user profile: $e';
     }
 
     setState(() {
@@ -60,7 +58,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
           .get();
 
       if (query.docs.isNotEmpty) {
-        // If there's already a pending request, inform the user
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
               content: Text('You have already requested an upgrade.')),
@@ -68,7 +65,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
         return;
       }
 
-      // Create a new upgrade request
       final upgradeRequest = UpgradeRequest(
         uid: _currentUser.uid,
         status: 'pending',
@@ -76,7 +72,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
         requestId: '',
       );
 
-      // Add the request and update its ID
       final docRef = await FirebaseFirestore.instance
           .collection('upgrade_requests')
           .add(upgradeRequest.toMap());
@@ -95,6 +90,33 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('User Profile'),
+        ),
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (_error.isNotEmpty) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Profile'),
+        ),
+        body: Center(
+          child: Text(
+            'Error: $_error',
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
+        ),
+      );
+    }
+
+    final isShelter = _userProfile?.userType == 'shelter';
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('User Profile'),
@@ -103,88 +125,179 @@ class _UserProfilePageState extends State<UserProfilePage> {
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
-          : _error.isNotEmpty
-              ? Center(
-                  child: Text(
-                    'Error: $_error',
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
-                )
-              : Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _userProfile?.profilePictureUrl != null
-                          ? CircleAvatar(
-                              radius: 50,
-                              backgroundImage: NetworkImage(
-                                  _userProfile!.profilePictureUrl!),
-                            )
-                          : const Icon(Icons.account_circle, size: 100),
-                      const SizedBox(height: 32.0),
-                      Text(
-                        'Name: ${_userProfile?.displayName ?? "Unknown"}',
-                        style: Theme.of(context).textTheme.bodyLarge,
-                      ),
-                      const SizedBox(height: 8.0),
-                      Text(
-                        'Email: ${_userProfile?.email ?? "Unknown"}',
-                        style: Theme.of(context).textTheme.bodyLarge,
-                      ),
-                      const SizedBox(height: 200),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          ElevatedButton(
-                            onPressed: () {
-                              if (_userProfile != null) {
-                                // Open the Edit Profile Modal
-                                showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return EditUserProfileModal(
-                                      userProfile: _userProfile!,
-                                    );
-                                  },
-                                ).then((_) {
-                                  _fetchUserProfile(); // Refresh data after closing the modal
-                                });
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                      content: Text('User profile not found')),
-                                );
-                              }
-                            },
-                            child: const Text('Edit Profile'),
-                          ),
-                          const SizedBox(width: 16.0),
-                          ElevatedButton(
-                            onPressed: () async {
-                              await FirebaseAuth.instance.signOut();
-
-                              Navigator.of(context).pushReplacement(
-                                MaterialPageRoute(
-                                  builder: (context) => const MenuScaffold(),
-                                ),
-                              );
-                            },
-                            child: const Text('Sign Out'),
-                          ),
-                        ],
-                      ),
-                      if (_userProfile?.userType == 'user')
-                        ElevatedButton(
-                          onPressed: sendUpgradeRequest,
-                          child: const Text('Upgrade account'),
-                        ),
-                    ],
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: _userProfile?.profilePictureUrl != null
+                  ? CircleAvatar(
+                      radius: 80,
+                      backgroundImage:
+                          NetworkImage(_userProfile!.profilePictureUrl!),
+                    )
+                  : const Icon(Icons.account_circle, size: 120),
+            ),
+            const SizedBox(height: 16),
+            Center(
+              child: Text(
+                _userProfile?.displayName ?? "Unknown",
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+            ),
+            Row(
+              children: [
+                const Padding(
+                  padding: EdgeInsets.all(20.0),
+                  child: Icon(
+                    Icons.email,
                   ),
                 ),
+                Text(
+                  _userProfile?.email ?? "Unknown",
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+              ],
+            ),
+            if (_userProfile?.phoneNumber != null &&
+                _userProfile!.phoneNumber!.isNotEmpty)
+              Row(
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.all(20.0),
+                    child: Icon(
+                      Icons.phone,
+                    ),
+                  ),
+                  Text(
+                    '${_userProfile!.phoneNumber}',
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                ],
+              ),
+            if (_userProfile?.bio != null && _userProfile!.bio!.isNotEmpty)
+              Row(
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.all(20.0),
+                    child: Icon(Icons.account_circle),
+                  ),
+                  Text(
+                    '${_userProfile!.bio}',
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                ],
+              ),
+            if (isShelter) ...[
+              Row(
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.all(20.0),
+                    child: Icon(Icons.location_on),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (_userProfile?.address != null)
+                        Text(
+                          '${_userProfile!.address}',
+                          style: Theme.of(context).textTheme.bodyLarge,
+                        ),
+                      Row(
+                        children: [
+                          if (_userProfile?.city != null)
+                            Text(
+                              '${_userProfile!.city}',
+                              style: Theme.of(context).textTheme.bodyLarge,
+                            ),
+                          if (_userProfile?.city != null &&
+                              _userProfile!.state != null)
+                            const Text(", "),
+                          if (_userProfile?.state != null)
+                            Text(
+                              '${_userProfile!.state}',
+                              style: Theme.of(context).textTheme.bodyLarge,
+                            ),
+                          if (_userProfile?.zipCode != null)
+                            Text(
+                              ' ${_userProfile!.zipCode}',
+                              style: Theme.of(context).textTheme.bodyLarge,
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              Row(children: [
+                const Padding(
+                  padding: EdgeInsets.all(20.0),
+                  child: Icon(Icons.access_time),
+                ),
+                if (_userProfile?.hoursOfOperation != null)
+                  Text(
+                    '${_userProfile!.hoursOfOperation}',
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+              ]),
+              Row(children: [
+                const Padding(
+                  padding: EdgeInsets.all(20.0),
+                  child: Icon(Icons.web),
+                ),
+                if (_userProfile?.website != null)
+                  Text(
+                    '${_userProfile!.website}',
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+              ])
+            ],
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    if (_userProfile != null) {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return EditUserProfileModal(
+                            userProfile: _userProfile!,
+                          );
+                        },
+                      ).then((_) {
+                        _fetchUserProfile(); // Refresh after editing
+                      });
+                    }
+                  },
+                  child: const Text("Edit Profile"),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    await FirebaseAuth.instance.signOut();
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(
+                        builder: (context) => const MenuScaffold(),
+                      ),
+                    );
+                  },
+                  child: const Text("Sign Out"),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Center(
+              child: _userProfile?.userType == 'user'
+                  ? ElevatedButton(
+                      onPressed: sendUpgradeRequest,
+                      child: const Text("Upgrade Account"),
+                    )
+                  : const SizedBox.shrink(),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

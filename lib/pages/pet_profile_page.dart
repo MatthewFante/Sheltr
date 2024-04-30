@@ -23,6 +23,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
   void initState() {
     super.initState();
     isAvailable = widget.pet.available; // Initialize availability status
+    _checkIfFavorite(); // Check if this pet is already a favorite
   }
 
   void _checkIfFavorite() async {
@@ -40,8 +41,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
       final userProfile = UserProfile.fromDocumentSnapshot(userDoc);
       final favoritePets = userProfile.favoritePets ?? [];
       setState(() {
-        isFavorite = favoritePets.contains(widget.pet
-            .documentId); // Check if this pet is in the user's favorite list
+        isFavorite = favoritePets.contains(widget.pet.documentId);
       });
     }
   }
@@ -182,12 +182,27 @@ class _PetProfilePageState extends State<PetProfilePage> {
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         actions: [
-          IconButton(
-            icon: Icon(
-              isFavorite ? Icons.star : Icons.star_border,
-              color: Colors.white,
-            ),
-            onPressed: _toggleFavorite, // Toggle favorite status
+          FutureBuilder<String>(
+            future: getCurrentUserType(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const CircularProgressIndicator(); // Show loading indicator while fetching user type
+              }
+
+              if (snapshot.hasError || snapshot.data != "user") {
+                return const SizedBox
+                    .shrink(); // Don't show anything if not user type
+              }
+
+              // Show the favorite toggle only if user type is 'user'
+              return IconButton(
+                icon: Icon(
+                  isFavorite ? Icons.star : Icons.star_border,
+                  color: Colors.white,
+                ),
+                onPressed: _toggleFavorite, // Toggle favorite status
+              );
+            },
           ),
         ],
       ),

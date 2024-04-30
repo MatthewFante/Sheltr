@@ -7,6 +7,14 @@ class UserProfile {
   final String userType; // Can be 'admin', 'shelter', or 'user'
   final String? profilePictureUrl; // Optional profile picture
   final List<String>? favoritePets; // Optional list of pet IDs
+  final String? phoneNumber; // Optional phone number
+  final String? address; // Optional address
+  final String? city; // Optional city
+  final String? state; // Optional state
+  final String? zipCode; // Optional zip code
+  final String? hoursOfOperation; // Optional hours of operation
+  final String? website; // Optional website
+  final String? bio; // Optional bio
 
   UserProfile({
     required this.userId,
@@ -15,25 +23,42 @@ class UserProfile {
     this.displayName,
     this.profilePictureUrl,
     this.favoritePets,
+    this.phoneNumber,
+    this.address,
+    this.city,
+    this.state,
+    this.zipCode,
+    this.hoursOfOperation,
+    this.website,
+    this.bio,
   });
 
-  // Method to create UserProfile object from Firestore DocumentSnapshot
   factory UserProfile.fromDocumentSnapshot(DocumentSnapshot snapshot) {
-    final data = snapshot.data() as Map<String, dynamic>;
+    final data =
+        snapshot.data() as Map<String, dynamic>? ?? {}; // Ensure data is a map
+
     return UserProfile(
       userId: snapshot.id,
       email: data['email'] ?? '',
-      userType:
-          data['userType'] ?? 'user', // Default to 'user' if not specified
-      displayName: data['displayName'],
-      profilePictureUrl: data['profilePictureUrl'],
-      favoritePets: data['favoritePets'] != null
+      userType: data.containsKey('userType')
+          ? data['userType']
+          : 'user', // Default to 'user'
+      displayName: data['displayName'] as String?,
+      profilePictureUrl: data['profilePictureUrl'] as String?,
+      favoritePets: data['favoritePets'] is List
           ? List<String>.from(data['favoritePets'])
           : null,
+      phoneNumber: data['phoneNumber'] as String?,
+      address: data['address'] as String?,
+      city: data['city'] as String?,
+      state: data['state'] as String?,
+      zipCode: data['zipCode'] as String?,
+      hoursOfOperation: data['hoursOfOperation'] as String?,
+      website: data['website'] as String?,
+      bio: data['bio'] as String?,
     );
   }
 
-  // Method to convert UserProfile object to a Map (for storing in Firestore)
   Map<String, dynamic> toMap() {
     return {
       'userId': userId,
@@ -42,10 +67,17 @@ class UserProfile {
       'displayName': displayName,
       'profilePictureUrl': profilePictureUrl,
       'favoritePets': favoritePets,
+      'phoneNumber': phoneNumber,
+      'address': address,
+      'city': city,
+      'state': state,
+      'zipCode': zipCode,
+      'hoursOfOperation': hoursOfOperation,
+      'website': website,
+      'bio': bio,
     };
   }
 
-  // Factory method to create UserProfile from a Map
   static UserProfile fromMap(Map<String, dynamic> map) {
     return UserProfile(
       userId:
@@ -54,13 +86,19 @@ class UserProfile {
       userType: map.containsKey('userType')
           ? map['userType']
           : 'user', // Default to 'user'
-      displayName: map.containsKey('displayName') ? map['displayName'] : null,
-      profilePictureUrl: map.containsKey('profilePictureUrl')
-          ? map['profilePictureUrl']
-          : null,
-      favoritePets: map.containsKey('favoritePets')
+      displayName: map['displayName'] as String?,
+      profilePictureUrl: map['profilePictureUrl'] as String?,
+      favoritePets: map['favoritePets'] is List
           ? List<String>.from(map['favoritePets'])
           : null,
+      phoneNumber: map['phoneNumber'] as String?,
+      address: map['address'] as String?,
+      city: map['city'] as String?,
+      state: map['state'] as String?,
+      zipCode: map['zipCode'] as String?,
+      hoursOfOperation: map['hoursOfOperation'] as String?,
+      website: map['website'] as String?,
+      bio: map['bio'] as String?,
     );
   }
 }

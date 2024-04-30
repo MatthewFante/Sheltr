@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:untitled/assets/palatte.dart';
 import 'package:untitled/pages/appointments_page.dart';
 import 'package:untitled/pages/login_page.dart';
 import 'package:untitled/pages/pets_feed_page.dart';

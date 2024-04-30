@@ -1,7 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:intl/intl.dart'; // For date formatting
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import 'package:untitled/models/meet_and_greet_request.dart';
 import 'package:untitled/models/pet.dart';
 
@@ -26,7 +26,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     try {
       await MeetAndGreetRequest.deleteMeetAndGreetRequest(requestId);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Request cancelled successfully.")),
+        const SnackBar(content: Text("Request cancelled successfully.")),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -48,8 +48,8 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
           }
 
           if (snapshot.hasError) {
-            return Center(
-              child: Text("Error fetching user ID"),
+            return const Center(
+              child: Text("Error fetching user ID."),
             );
           }
 
@@ -65,7 +65,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
               }
 
               if (streamSnapshot.hasError) {
-                return Center(
+                return const Center(
                   child: Text("Error fetching meet & greet requests."),
                 );
               }
@@ -73,7 +73,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
               final requests = streamSnapshot.data ?? [];
 
               if (requests.isEmpty) {
-                return Center(
+                return const Center(
                   child: Text("No meet & greet requests found."),
                 );
               }
@@ -89,15 +89,19 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                     builder: (context, petSnapshot) {
                       if (petSnapshot.connectionState ==
                           ConnectionState.waiting) {
-                        return ListTile(
-                          title: const Text("Loading pet details..."),
-                          trailing: const CircularProgressIndicator(),
+                        return const Card(
+                          child: ListTile(
+                            title: Text("Loading pet details..."),
+                            trailing: CircularProgressIndicator(),
+                          ),
                         );
                       }
 
                       if (petSnapshot.hasError) {
-                        return ListTile(
-                          title: const Text("Error loading pet details"),
+                        return const Card(
+                          child: ListTile(
+                            title: Text("Error loading pet details"),
+                          ),
                         );
                       }
 
@@ -107,26 +111,57 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                           ? pet!.imageUrls[0]
                           : null;
 
-                      return ListTile(
-                        leading: petImageUrl != null
-                            ? CircleAvatar(
-                                backgroundImage: NetworkImage(petImageUrl),
-                              )
-                            : const CircleAvatar(
-                                child: Icon(Icons.pets),
+                      return Card(
+                          elevation: 1, // Add a subtle shadow
+                          child: Row(
+                            children: [
+                              petImageUrl != null
+                                  ? Padding(
+                                      padding: const EdgeInsets.fromLTRB(
+                                          15, 30, 15, 30),
+                                      child: CircleAvatar(
+                                        backgroundImage:
+                                            NetworkImage(petImageUrl),
+                                      ),
+                                    )
+                                  : const Padding(
+                                      padding: EdgeInsets.all(15.0),
+                                      child: CircleAvatar(
+                                        child: Icon(Icons.pets),
+                                      ),
+                                    ),
+                              SizedBox(
+                                width: 250,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text("Meet & Greet w/ $petName",
+                                        style: const TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold)),
+                                    Text(
+                                      "${DateFormat.yMMMd().format(request.meetDate)} @ ${request.meetTime}",
+                                    ),
+                                    status == "approved"
+                                        ? Text(status.toUpperCase(),
+                                            style: const TextStyle(
+                                                color: Colors.green,
+                                                fontWeight: FontWeight.bold))
+                                        : Text(status.toUpperCase(),
+                                            style: const TextStyle(
+                                                color: Colors.red,
+                                                fontWeight: FontWeight.bold))
+                                  ],
+                                ),
                               ),
-                        title: Text("Meet & Greet with $petName"),
-                        subtitle: Text(
-                          "Meet Date: ${DateFormat.yMMMd().format(request.meetDate)}\nMeet Time: ${request.meetTime}\nStatus: ${status}",
-                        ),
-                        trailing: (status == 'pending' || status == 'approved')
-                            ? IconButton(
-                                icon: const Icon(Icons.cancel),
+                              ElevatedButton(
                                 onPressed: () async {
                                   final confirmCancel = await showDialog<bool>(
                                     context: context,
                                     builder: (context) => AlertDialog(
-                                      title: const Text("Cancel Request"),
+                                      title: const Text(
+                                        "Cancel Request",
+                                      ),
                                       content: const Text(
                                           "Are you sure you want to cancel this request?"),
                                       actions: [
@@ -150,9 +185,12 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                                     await _cancelRequest(request.requestId);
                                   }
                                 },
-                              )
-                            : null, // No cancellation for other statuses
-                      );
+                                child: const Text("Cancel",
+                                    style: TextStyle(color: Color(0xff990000))),
+                              ),
+                            ],
+                          ));
+                      //;
                     },
                   );
                 },
