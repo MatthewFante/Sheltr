@@ -1,3 +1,9 @@
+// Matthew Fante
+// INFO-C451: System Implementation
+// Spring 2024 Final Project
+
+// This file contains the UpgradeRequest class, which represents a user-to-shelter upgrade request object in the Firestore database.
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UpgradeRequest {

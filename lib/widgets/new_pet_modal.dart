@@ -1,3 +1,7 @@
+// Matthew Fante
+// INFO-C451: System Implementation
+// Spring 2024 Final Project
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:untitled/models/pet.dart';

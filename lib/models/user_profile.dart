@@ -1,3 +1,9 @@
+// Matthew Fante
+// INFO-C451: System Implementation
+// Spring 2024 Final Project
+
+// This file contains the UserProfile class, which represents a user profile object in the Firestore database.
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserProfile {

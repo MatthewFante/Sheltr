@@ -1,3 +1,9 @@
+// Matthew Fante
+// INFO-C451: System Implementation
+// Spring 2024 Final Project
+
+// This file contains the MenuScaffold class, which is a StatefulWidget that displays the main menu of the app.
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';

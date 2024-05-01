@@ -51,7 +51,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     try {
       final query = await FirebaseFirestore.instance
           .collection('upgrade_requests')
-          .where('uid', isEqualTo: widget.userId) // Use the correct userId
+          .where('uid', isEqualTo: widget.userId)
           .where('status', isEqualTo: 'pending')
           .get();
 
@@ -64,7 +64,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
       }
 
       final upgradeRequest = UpgradeRequest(
-        uid: widget.userId, // Use the correct userId
+        uid: widget.userId,
         status: 'pending',
         requestTime: Timestamp.now(),
         requestId: '',
@@ -178,7 +178,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     child: Icon(Icons.account_circle),
                   ),
                   SizedBox(
-                    width: 300, // Use width to fit longer text
+                    width: 300,
                     child: Text(
                       '${_userProfile!.bio}',
                       overflow:

@@ -2,7 +2,7 @@
 // INFO-C451: System Implementation
 // Spring 2024 Final Project
 
-// this class describes the register page which allows the user to register for the app
+// this class describes the register page which allows the user to register for the app using their email and password
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';

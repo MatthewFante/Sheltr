@@ -2,7 +2,7 @@
 // INFO-C451: System Implementation
 // Spring 2024 Final Project
 
-// this class describes the custom color palette for the app
+// this class describes the custom color palette for the app theme
 
 import 'package:flutter/material.dart';
 

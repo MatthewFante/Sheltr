@@ -1,3 +1,9 @@
+// Matthew Fante
+// INFO-C451: System Implementation
+// Spring 2024 Final Project
+
+// This file contains the ImageUploadModal widget, which is a modal dialog that allows the user to select an image from their device and upload it to Firebase Storage.
+
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';

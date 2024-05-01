@@ -1,3 +1,9 @@
+// Matthew Fante
+// INFO-C451: System Implementation
+// Spring 2024 Final Project
+
+// This file contains the PetsFeedPage class, which displays a feed of pets available for adoption.
+
 import 'package:flutter/material.dart';
 import 'package:untitled/models/pet.dart';
 import 'package:untitled/pages/pet_profile_page.dart';

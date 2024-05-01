@@ -2,6 +2,8 @@
 // INFO-C451: System Implementation
 // Spring 2024 Final Project
 
+// This file contains the main entry point for the application.
+
 import 'package:flutter/material.dart';
 import 'package:untitled/assets/palatte.dart';
 import 'package:firebase_core/firebase_core.dart';

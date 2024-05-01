@@ -1,3 +1,9 @@
+// Matthew Fante
+// INFO-C451: System Implementation
+// Spring 2024 Final Project
+
+// This file contains the EditPetProfileModal class, which is a StatefulWidget that displays a modal dialog for editing a pet profile.
+
 import 'package:flutter/material.dart';
 import 'package:untitled/models/pet.dart';
 

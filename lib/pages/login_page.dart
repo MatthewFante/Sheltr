@@ -2,7 +2,7 @@
 // INFO-C451: System Implementation
 // Spring 2024 Final Project
 
-// this class describes the login page which allows the user to login to the app
+// this class describes the login page which allows the user to login to the app using their email and password
 
 import 'package:flutter/material.dart';
 import 'package:untitled/authentication/validator.dart';

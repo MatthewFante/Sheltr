@@ -2,7 +2,7 @@
 // INFO-C451: System Implementation
 // Spring 2024 Final Project
 
-// this class describes the Firebase Authentication methods for the app
+// this class describes the Firebase Authentication methods for the app to use
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';

@@ -1,3 +1,9 @@
+// Matthew Fante
+// INFO-C451: System Implementation
+// Spring 2024 Final Project
+
+// This file contains the AppointmentWidget class, which displays a single meet-and-greet request in a card format.
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:untitled/models/meet_and_greet_request.dart';

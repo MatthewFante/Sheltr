@@ -2,7 +2,7 @@
 // INFO-C451: System Implementation
 // Spring 2024 Final Project
 
-// this class describes validator methods used for validating user input
+// this class describes validator methods used for validating user input in the registration form
 
 class Validator {
   static String? validateName({required String name}) {

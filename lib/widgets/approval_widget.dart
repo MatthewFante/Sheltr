@@ -1,3 +1,9 @@
+// Matthew Fante
+// INFO-C451: System Implementation
+// Spring 2024 Final Project
+
+// This file contains the ApprovalWidget class, which displays a single upgrade request for approval.
+
 import 'package:flutter/material.dart';
 import 'package:untitled/models/upgrade_request.dart';
 import 'package:untitled/models/user_profile.dart';

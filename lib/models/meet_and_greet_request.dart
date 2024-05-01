@@ -1,16 +1,22 @@
+// Matthew Fante
+// INFO-C451: System Implementation
+// Spring 2024 Final Project
+
+// This file contains the MeetAndGreetRequest class, which represents a meet-and-greet request object in the Firestore database.
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MeetAndGreetRequest {
   final String requestId;
   final String requesterId;
   final String petId;
-  final DateTime meetDate; // The date of the meet and greet
-  final String meetTime; // The time of the meet and greet
-  final String status; // e.g., 'pending', 'accepted', 'declined'
-  final DateTime createDate; // The creation date/time
-  final DateTime? updateDate; // The last update date/time
-  final String? lastUpdatedBy; // The user ID of the last updater
-  final String? notes; // Any additional notes or comments
+  final DateTime meetDate;
+  final String meetTime;
+  final String status;
+  final DateTime createDate;
+  final DateTime? updateDate;
+  final String? lastUpdatedBy;
+  final String? notes;
 
   MeetAndGreetRequest({
     required this.requestId,
